@@ -1,0 +1,15 @@
+# Brand-safety detection rubric for D3.
+#
+# The deterministic engines must catch a deliberately non-compliant variant (unqualified
+# guarantee, misleading absolute claim, hype, no t&cs), and every generated result must
+# carry the human-review flag (nothing consequential auto-publishes).
+metric: brand_safety_detection
+threshold: 0.80
+description: >-
+  Fraction of golden cases where the studio FAILS a deliberately non-compliant probe
+  variant (so unsafe creative is reliably caught).
+companion_metrics:
+  review_safety:
+    threshold: 0.99
+    description: >-
+      Fraction of results that correctly set requires_human_review=True (maker-checker).

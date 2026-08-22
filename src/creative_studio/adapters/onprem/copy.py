@@ -1,0 +1,31 @@
+"""On-prem placeholder for ``CopyGenerationPort`` — the sovereign migration target.
+
+Constructs cleanly with no external dependencies and structurally satisfies the same
+Protocol as the managed Gemini copy adapter, so the contract tests prove interface parity.
+"""
+
+from __future__ import annotations
+
+from ...config import Settings
+from ...domain.models import CreativeBrief, LlmRequest, LlmResponse, Variant
+
+_MESSAGE = (
+    "On-prem CopyGenerationPort adapter is a migration placeholder; implement against your "
+    "on-premise model platform. Core domain logic is unchanged."
+)
+
+
+class OnPremCopyAdapter:
+    """Placeholder copy adapter for the on-prem profile."""
+
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+
+    def generate_variants(self, brief: CreativeBrief) -> tuple[Variant, ...]:
+        raise NotImplementedError(_MESSAGE)
+
+    def generate(self, request: LlmRequest) -> LlmResponse:
+        raise NotImplementedError(_MESSAGE)
+
+    def classify(self, text: str, labels: list[str]) -> str:
+        raise NotImplementedError(_MESSAGE)

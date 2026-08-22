@@ -1,0 +1,11 @@
+# Golden creative set for the D3 offline eval gate. OBVIOUSLY-FICTIONAL synthetic cases.
+# Each line: a (topic, market, vertical, channel) brief. The seeded local copy generator
+# drafts brand-safe variants for these; the gate checks groundedness, citation accuracy,
+# brand-safety detection (against a known-bad probe) and review safety. Covers BOTH verticals
+# (banking AND online retail) across ALL THREE markets (JP, AU, SG) and several channels.
+{"id": "sg-banking-email", "topic": "high-yield savings", "market": "SG", "vertical": "banking", "channel": "email"}
+{"id": "jp-banking-push", "topic": "multi-currency wallet", "market": "JP", "vertical": "banking", "channel": "push"}
+{"id": "au-banking-search", "topic": "home loan refinance", "market": "AU", "vertical": "banking", "channel": "search"}
+{"id": "sg-retail-social", "topic": "spring apparel sale", "market": "SG", "vertical": "online_retail", "channel": "social"}
+{"id": "jp-retail-email", "topic": "loyalty points launch", "market": "JP", "vertical": "online_retail", "channel": "email"}
+{"id": "au-retail-display", "topic": "end of season clearance", "market": "AU", "vertical": "online_retail", "channel": "display"}

@@ -1,0 +1,17 @@
+# Groundedness rubric for the D3 creative review.
+#
+# Every finding the deterministic engines raise must cite the brand rule, advertising-claim
+# rule, policy clause or asset-spec requirement it enforces. The offline gate
+# (eval/run_eval.py) enforces the threshold below; the production Gen AI evaluation service
+# uses the same metric name pre-promotion.
+metric: check_groundedness
+threshold: 0.80
+description: >-
+  Fraction of findings that carry at least one citation to the rule / policy / spec they
+  enforce. A finding raised without a citation fails.
+companion_metrics:
+  citation_accuracy:
+    threshold: 0.90
+    description: >-
+      Fraction of cited sources whose type is one of the four rule namespaces (brand,
+      claim, policy, asset). No fabricated citations.

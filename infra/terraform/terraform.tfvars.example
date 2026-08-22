@@ -1,0 +1,41 @@
+# terraform.tfvars.example — concrete sample values for a Singapore-resident deploy.
+#
+# Copy to terraform.tfvars and fill in your own ids. Do NOT commit terraform.tfvars.
+# Region/zone default to Singapore. All values below are fictional.
+
+project_id = "fict-creative-studio-sg-prod"
+
+# Residency. `region` is chosen at deploy time and must be a member of `allowed_regions`;
+# both default to Singapore, so these lines just restate the secure default. To deploy
+# elsewhere, set BOTH: extending `allowed_regions` is the deliberate residency review point
+# and belongs only after confirming the managed stack and your obligations in that region.
+allowed_regions = ["asia-southeast1"]
+region          = "asia-southeast1"
+zone            = "asia-southeast1-a"
+
+# ~7-year WORM retention for the audit log. Bucket lock is irreversible.
+retention_days = 2557
+
+# Cloud Run image (Artifact Registry in asia-southeast1).
+container_image = "asia-southeast1-docker.pkg.dev/fict-creative-studio-sg-prod/mkt/creative-studio:0.1.0"
+
+# Org / Access Context Manager. access_policy_id is the numeric policy id.
+org_id           = "123456789012"
+access_policy_id = "987654321098"
+
+# Operator/CI identities allowed through the perimeter (so applies do not self-lock).
+operator_members = [
+  "user:platform-admin@example.com",
+  "serviceAccount:ci-deployer@fict-creative-studio-sg-prod.iam.gserviceaccount.com",
+]
+
+# Sovereignty perimeter on, but DRY-RUN first. Flip vpc_sc_enforce to true only after a
+# clean dry-run (watch the vpc_sc_denials alert in monitoring.tf).
+enable_vpc_sc  = true
+vpc_sc_enforce = false
+
+# Wire a real Monitoring notification channel id here in prod.
+alert_notification_channels = []
+
+# Optional: restrict IAM grants to your directory/customer ids.
+allowed_policy_member_domains = []

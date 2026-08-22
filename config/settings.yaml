@@ -1,0 +1,151 @@
+# Brand-Safe Creative and Content Studio (D3) — runtime configuration.
+#
+# Switch the entire managed stack to on-prem by setting MKT_CREATIVE_PROFILE=onprem
+# (or profile: onprem below). Nothing in src/creative_studio/domain changes.
+# MKT_CREATIVE_PROFILE=local runs the whole pipeline offline (deterministic templated copy
+# generator + SQLite FTS5 brand corpus + deterministic validators), with NO Google Cloud
+# SDK required.
+#
+# There is NO default profile. Leaving both the variable and `profile:` below unset means
+# nobody chose, which is not the same as choosing `local`: the SDK-free adapters still bind
+# (nothing else is installed) but every relaxation is refused, and the seeded no-auth dev
+# personas are NOT served. Name the profile deliberately.
+#
+# D3 is generic and APAC: the active vertical (banking | online_retail), market (JP | AU |
+# SG) and channel are settings, and each market's residency region / locales come from the
+# per-market profiles below (config + seed), never a hard-coded branch.
+
+project_id: ${GOOGLE_CLOUD_PROJECT:-your-gcp-project}
+region: asia-southeast1                  # default residency region; per-market overrides apply
+profile: ""                              # no default; MKT_CREATIVE_PROFILE wins. gcp | local | platform | onprem
+vertical: ${MKT_VERTICAL:-banking}       # banking | online_retail
+market: ${MKT_MARKET:-SG}                # JP | AU | SG
+channel: ${MKT_CHANNEL:-email}           # email | sms | push | display | search | social | web
+
+models:
+  reasoning: gemini-3.5-flash            # GA — copy / variant drafting + narration
+  triage: gemini-3.1-flash-lite          # GA — routing / triage / guardrail pre-checks
+  hard_reasoning: gemini-3.1-pro         # Preview — OFF unless use_hard_reasoning=true
+  use_hard_reasoning: false
+  image_model: imagen-4.0-generate-001   # Imagen — asset image generation
+
+knowledge_base:
+  base_url_env: HRZ_KB_URL               # A2 Enterprise KB (D3's brand / creative corpus)
+  data_store_id: mkt-creative-corpus     # only used by the standalone GCP File Search adapter
+  location: asia-southeast1
+  top_k: 10
+
+model_armor:
+  template_id: mkt-creative-guardrail
+  host: modelarmor.asia-southeast1.rep.googleapis.com
+
+logging:
+  log_name: creative-studio-audit
+  bucket: creative-studio-worm
+  retention_days: 2557                   # ~7 years; bucket is locked (irreversible) in prod
+
+agent_engine:
+  resource_name: ${MKT_AGENT_ENGINE:-}
+  display_name: creative-studio
+
+# Local profile stores (SDK-free). Empty paths default under ~/.creative_studio/;
+# tests use ":memory:" for ephemeral, deterministic SQLite. No Google Cloud here.
+local:
+  db_path: ${MKT_LOCAL_DB:-}             # SQLite FTS5 brand-corpus index
+  audit_path: ${MKT_LOCAL_AUDIT:-}       # append-only local audit (WORM stand-in)
+  seed_path: ${MKT_LOCAL_SEED:-}         # brand-corpus seed JSON ("" => bundled fictional seed)
+
+# Adopter-owned decision policy. These are reference defaults, not regulatory advice.
+policy:
+  max_exclamations: 1
+  caps_word_threshold: 2
+  max_avg_word_length: 7.5
+  variant_similarity_threshold: 0.7
+
+# Per-market residency regions and locales (config + seed, NEVER hard-coded in a branch).
+# JP -> Tokyo, AU -> Sydney, SG -> Singapore; the region is selectable at deploy and
+# validated by config.market_profile().
+markets:
+  JP:
+    region: asia-northeast1
+    locales: [ja, en]
+    currency: JPY
+  AU:
+    region: australia-southeast1
+    locales: [en]
+    currency: AUD
+  SG:
+    region: asia-southeast1
+    locales: [en]
+    currency: SGD
+
+# ----------------------------------------------------------------------------- #
+# Port -> adapter bindings. The container picks the entry for the active profile,
+# falling back to the 'gcp' entry. These dotted paths are the build contract:
+# each adapter class takes a single Settings argument.
+# ----------------------------------------------------------------------------- #
+adapters:
+  # End-user identity (authentication). local = seeded dev personas, NO IdP/AD/LDAP, so
+  # demos and tests run offline; gcp/platform = verify the IAP-injected signed assertion
+  # (auth configured ON the GCP service); onprem = client IdP placeholder. The resolved
+  # Principal supplies the audit actor + entitlement principals, replacing any client-
+  # asserted actor/ACL.
+  identity:
+    gcp: creative_studio.adapters.gcp.iap_identity:IapIdentityAdapter
+    platform: creative_studio.adapters.gcp.iap_identity:IapIdentityAdapter
+    local: creative_studio.adapters.local.identity:LocalPersonaIdentityAdapter
+    onprem: creative_studio.adapters.onprem.identity:OnPremIdentityAdapter
+  copy:
+    gcp: creative_studio.adapters.gcp.gemini_copy:GeminiCopyAdapter
+    platform: creative_studio.adapters.gcp.gemini_copy:GeminiCopyAdapter
+    local: creative_studio.adapters.local.copy:LocalTemplatedCopyAdapter
+    onprem: creative_studio.adapters.onprem.copy:OnPremCopyAdapter
+  image:
+    gcp: creative_studio.adapters.gcp.imagen_image:ImagenImageAdapter
+    platform: creative_studio.adapters.gcp.imagen_image:ImagenImageAdapter
+    local: creative_studio.adapters.local.image:LocalDeterministicImageAdapter
+    onprem: creative_studio.adapters.onprem.image:OnPremImageAdapter
+  knowledge_base:
+    gcp: creative_studio.adapters.gcp.file_search_kb:FileSearchKnowledgeBaseAdapter
+    platform: creative_studio.adapters.platform.remote_knowledge_base:RemoteKnowledgeBaseAdapter
+    local: creative_studio.adapters.local.knowledge_base:LocalKnowledgeBaseAdapter
+    onprem: creative_studio.adapters.onprem.knowledge_base:OnPremKnowledgeBaseAdapter
+  guardrail:
+    gcp: creative_studio.adapters.gcp.model_armor_guardrail:ModelArmorGuardrailAdapter
+    platform: creative_studio.adapters.platform.remote_guardrail:RemoteGuardrailAdapter
+    local: creative_studio.adapters.local.guardrail:LocalHeuristicGuardrailAdapter
+    onprem: creative_studio.adapters.onprem.guardrail:OnPremGuardrailAdapter
+  audit:
+    gcp: creative_studio.adapters.gcp.cloud_logging_audit:CloudLoggingAuditAdapter
+    platform: creative_studio.adapters.platform.remote_audit:RemoteAuditAdapter
+    local: creative_studio.adapters.local.audit:LocalAppendOnlyAuditAdapter
+    onprem: creative_studio.adapters.onprem.audit:OnPremAuditAdapter
+  tracer:
+    gcp: creative_studio.adapters.gcp.cloud_trace_tracer:CloudTraceTracerAdapter
+    platform: creative_studio.adapters.gcp.cloud_trace_tracer:CloudTraceTracerAdapter
+    local: creative_studio.adapters.local.tracer:LocalNoopTracerAdapter
+    onprem: creative_studio.adapters.onprem.tracer:OnPremTracerAdapter
+  evaluation:
+    gcp: creative_studio.adapters.gcp.genai_eval:GenAiEvalAdapter
+    platform: creative_studio.adapters.platform.remote_evaluation:RemoteEvaluationAdapter
+    local: creative_studio.adapters.local.evaluation:LocalOfflineEvalAdapter
+    onprem: creative_studio.adapters.onprem.evaluation:OnPremEvalAdapter
+  agent_registry:
+    gcp: creative_studio.adapters.gcp.a2a_registry:A2ARegistryAdapter
+    platform: creative_studio.adapters.platform.remote_registry:RemoteRegistryAdapter
+    local: creative_studio.adapters.local.registry_agent:LocalAgentRegistryAdapter
+    onprem: creative_studio.adapters.onprem.registry_agent:OnPremAgentRegistryAdapter
+  tool_catalog:
+    gcp: creative_studio.adapters.gcp.mcp_tool_catalog:McpToolCatalogAdapter
+    platform: creative_studio.adapters.gcp.mcp_tool_catalog:McpToolCatalogAdapter
+    local: creative_studio.adapters.local.tool_catalog:LocalToolCatalogAdapter
+    onprem: creative_studio.adapters.onprem.tool_catalog:OnPremToolCatalogAdapter
+  # Rule R8: an escalated CreativeStudioResult (requires_human_review) is routed to the Hrz7
+  # Human-Review & Maker-Checker Console via the shared review-kit, not left as a boolean.
+  # local = enqueue to an in-memory outbox (offline demo/tests); gcp/platform = S2S submit to
+  # Hrz7; onprem = fail-fast sovereign placeholder.
+  review_router:
+    gcp: creative_studio.adapters.platform.review_router:PlatformReviewRouter
+    platform: creative_studio.adapters.platform.review_router:PlatformReviewRouter
+    local: creative_studio.adapters.local.review_router:LocalReviewRouter
+    onprem: creative_studio.adapters.onprem.review_router:OnPremReviewRouter
