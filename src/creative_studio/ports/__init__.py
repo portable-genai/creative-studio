@@ -7,7 +7,7 @@ remote-platform, on-prem placeholder, or local) satisfies the same contract.
 
 from .generation import CopyGenerationPort, ImageGenerationPort
 from .governance import AgentRegistryPort, ToolCatalogPort
-from .identity import IdentityPort
+from .identity import EndUserAuthUnavailableError, IdentityPort
 from .knowledge_base import KnowledgeBasePort
 from .observability import (
     AuditSinkPort,
@@ -30,5 +30,6 @@ __all__ = [
     "AgentRegistryPort",
     "ToolCatalogPort",
     "IdentityPort",
+    "EndUserAuthUnavailableError",
     "ReviewRouterPort",
 ]
