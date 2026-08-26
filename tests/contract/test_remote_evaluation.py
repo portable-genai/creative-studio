@@ -104,7 +104,7 @@ def _gate_body(*, passed: bool, rows: list[dict], attested: bool = True) -> dict
 
 def _adapter(monkeypatch: pytest.MonkeyPatch) -> RemoteEvaluationAdapter:
     monkeypatch.setenv("HRZ_QUALITY_URL", _BASE)
-    # Default Settings pins reasoning = gemini-3.5-flash, which the target.model must carry.
+    # Default Settings pins reasoning = gemini-3.7-flash, which the target.model must carry.
     return RemoteEvaluationAdapter(Settings())
 
 
@@ -125,7 +125,7 @@ def test_evaluate_posts_structured_target_bundle_and_parses_results(
 
     # Structured target with the pinned reasoning model + prompt_version + dataset_id.
     assert body["target"] == {
-        "model": "gemini-3.5-flash",
+        "model": "gemini-3.7-flash",
         "prompt_version": "v1",
         "dataset_id": "golden",
         "system": "",
