@@ -52,6 +52,7 @@ def build_handlers(actor: str) -> dict[str, mcpserve.Handler]:
 
     def review_variant(**arguments: Any) -> Any:
         variant = Variant(
+            id="",
             headline=str(arguments.get("headline", "") or ""),
             body=str(arguments.get("body", "") or ""),
             cta=str(arguments.get("cta", "") or ""),

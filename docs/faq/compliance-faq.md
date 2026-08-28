@@ -64,10 +64,13 @@ column, and re-review with local counsel: the Mkt3-control column is stable acro
 
 ### Is data residency enforced?
 
-Yes, at deploy time, per market: each of Japan (`asia-northeast1`), Australia
-(`australia-southeast1`) and Singapore (`asia-southeast1`) carries its own in-country region,
-validated to fail fast, with regional endpoints, a resource-location Org Policy allowlist,
-CMEK, and a VPC-SC perimeter (P-03, P-09). The residency-violation CI gate is the sibling
+Yes at deploy time, per market, with one stated exception: each of Japan (`asia-northeast1`),
+Australia (`australia-southeast1`) and Singapore (`asia-southeast1`) carries its own in-country
+region, validated to fail fast, with regional endpoints, a resource-location Org Policy
+allowlist, CMEK, and a VPC-SC perimeter (P-03, P-09). **Agent Search follows none of them:** it
+serves only `global` / `us` / `eu`, so the retrieval corpus defaults to `global` and is
+unlocated. That is recorded in [`COMPLIANCE.md`](../../COMPLIANCE.md) rather than absorbed, and
+`us` or `eu` confines it to one jurisdiction where an obligation bites. The residency-violation CI gate is the sibling
 **Rsk3** `architecture-validator` (`domain/residency/`); the exit / concentration-risk plan is
 **Rgc9** `operational-resilience-mapping` (`domain/concentration_exit/`). This repo enforces
 residency in its own infra and is one of the systems those tools reason about.
