@@ -78,7 +78,7 @@ commons are pinned by git tag with the exact SHA captured in the locks.
 ### Where are secrets? Are any committed?
 
 No secret values are in the repo. `config/settings.yaml` stores only the **names** of env vars
-holding secrets (`*_env`, `HRZ_S2S_TOKEN`, ...); values are read at construction time and never
+holding secrets (`*_env`, `S2S_TOKEN`, ...); values are read at construction time and never
 logged. `grep -riE "secret|token|key" config/` matches only `*_env` names. The brand corpus
 seed and every fixture are obviously fictional.
 

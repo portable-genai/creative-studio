@@ -48,7 +48,7 @@ models:
   image_model: imagen-4.0-generate-001   # Imagen — asset image generation
 
 knowledge_base:
-  base_url_env: HRZ_KB_URL               # A2 Enterprise KB (D3's brand / creative corpus)
+  base_url_env: KNOWLEDGE_BASE_URL               # A2 Enterprise KB (D3's brand / creative corpus)
   data_store_id: mkt-creative-corpus     # only used by the standalone GCP File Search adapter
   # NOT the deploy region, and it cannot be. Agent Search serves exactly `global`, `us` and
   # `eu` and no Cloud region at all, so `asia-southeast1` -- pinned here until 2026-08-27 --

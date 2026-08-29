@@ -187,7 +187,7 @@ class ModelSettings:
 class KnowledgeBaseSettings:
     """The internal brand / creative corpus (File Search / A2)."""
 
-    base_url_env: str = "HRZ_KB_URL"
+    base_url_env: str = "KNOWLEDGE_BASE_URL"
     data_store_id: str = "mkt-creative-corpus"  # only used by the standalone GCP adapter
     location: str = "asia-southeast1"
     top_k: int = 10
