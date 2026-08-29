@@ -10,7 +10,7 @@ import "./globals.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "D3 Brand-Safe Creative Studio",
+  title: "Brand-Safe Creative Studio",
   description:
     "Gemini copy + Imagen image with deterministic brand, advertising-claim, per-market policy and asset-spec validation, generic across banking and online retail and the JP/AU/SG markets.",
 };

@@ -99,7 +99,7 @@ export default function Page() {
   return (
     <main className="mx-auto flex max-w-6xl gap-6 p-6">
       <aside className="w-80 shrink-0">
-        <h1 className="text-base font-semibold">D3 Brand-Safe Creative Studio</h1>
+        <h1 className="text-base font-semibold">Brand-Safe Creative Studio</h1>
         <p className="mb-4 text-xs text-ink-500">
           Generate creative and prove it is brand-safe, generic across banking and online
           retail and the JP/AU/SG markets.
