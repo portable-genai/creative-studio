@@ -40,7 +40,7 @@ export MKT_CREATIVE_PROFILE=local
 make run-api                      # uvicorn on http://localhost:8102
 
 # UI (in ./ui)
-cp .env.local.example .env.local  # NEXT_PUBLIC_API_BASE defaults to http://localhost:8102
+# no .env.local needed: NEXT_PUBLIC_API_BASE already defaults to http://localhost:8102
 npm install && npm run dev        # http://localhost:3000
 ```
 
