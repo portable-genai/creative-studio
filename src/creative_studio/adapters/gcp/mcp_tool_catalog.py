@@ -32,11 +32,33 @@ _SCOPE_SCHEMA: dict[str, Any] = {
         "enum": ["banking", "online_retail"],
         "description": "Restrict to a single vertical.",
     },
+}
+
+# A channel is a property of a CREATIVE, not of the brand corpus, and it used to live in the
+# scope fragment that all three tools shared. `search_brand_corpus` therefore advertised a
+# channel it could not use: `RetrievalQuery` has no channel field and nothing downstream reads
+# one. Declared separately so the two tools that DO build a creative ask for it and the one
+# that searches a corpus does not.
+_CHANNEL_SCHEMA: dict[str, Any] = {
     "channel": {
         "type": "string",
         "enum": ["email", "sms", "push", "display", "search", "social", "web"],
         "description": "The marketing channel.",
     },
+}
+
+# The brief both creative tools build, declared once. `review_variant` runs the checks with the
+# SAME `_brief` `generate_creative` does -- a claim is judged against the campaign theme, the
+# product and the offer -- so it needs the brief keys, and until 2026-08-31 it declared none of
+# them under `additionalProperties: False`. A reviewer was reviewing against an empty brief and
+# could not say otherwise. `n_variants` is deliberately NOT here: it is how many drafts to
+# produce, which is meaningless when reviewing one supplied variant.
+_BRIEF_SCHEMA: dict[str, Any] = {
+    "topic": {"type": "string", "description": "Campaign theme."},
+    "product": {"type": "string"},
+    "offer": {"type": "string"},
+    **_SCOPE_SCHEMA,
+    **_CHANNEL_SCHEMA,
 }
 
 
@@ -53,11 +75,8 @@ def _build_catalog() -> dict[str, ToolSpec]:
             input_schema={
                 "type": "object",
                 "properties": {
-                    "topic": {"type": "string", "description": "Campaign theme."},
-                    "product": {"type": "string"},
-                    "offer": {"type": "string"},
                     "n_variants": {"type": "integer", "minimum": 1, "maximum": 8, "default": 3},
-                    **_SCOPE_SCHEMA,
+                    **_BRIEF_SCHEMA,
                 },
                 "required": ["topic"],
                 "additionalProperties": False,
@@ -75,7 +94,7 @@ def _build_catalog() -> dict[str, ToolSpec]:
                     "headline": {"type": "string"},
                     "body": {"type": "string"},
                     "cta": {"type": "string"},
-                    **_SCOPE_SCHEMA,
+                    **_BRIEF_SCHEMA,
                 },
                 "required": ["headline", "body"],
                 "additionalProperties": False,
