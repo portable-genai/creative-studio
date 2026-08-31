@@ -31,7 +31,15 @@ from ..domain.models import Channel, CreativeBrief, Market, RetrievalQuery, Vari
 HANDLER_NAMES: tuple[str, ...] = ("generate_creative", "review_variant", "search_brand_corpus")
 
 
-def _brief(arguments: dict[str, Any]) -> CreativeBrief:
+def _brief(arguments: dict[str, Any], *, n_variants: int) -> CreativeBrief:
+    """The brief both creative tools work from.
+
+    ``n_variants`` is passed rather than read out of ``arguments`` because it means something
+    on only one of the two paths: it is how many drafts to GENERATE. The review path used to
+    reach it through this helper, so reviewing one supplied variant read a draft count the
+    reviewer's own schema never offered -- an argument that could change nothing and that no
+    caller could set.
+    """
     return CreativeBrief(
         topic=str(arguments.get("topic", "") or ""),
         market=Market(str(arguments.get("market", ""))),
@@ -39,8 +47,19 @@ def _brief(arguments: dict[str, Any]) -> CreativeBrief:
         channel=Channel(str(arguments.get("channel", ""))),
         product=str(arguments.get("product", "") or ""),
         offer=str(arguments.get("offer", "") or ""),
-        n_variants=int(arguments.get("n_variants") or 3),
+        n_variants=n_variants,
     )
+
+
+def _optional_market(arguments: dict[str, Any]) -> Market | None:
+    """The requested market, or None when the caller named none. Never a guessed default."""
+    raw = str(arguments.get("market", "") or "")
+    return Market(raw) if raw else None
+
+
+def _optional_vertical(arguments: dict[str, Any]) -> Vertical | None:
+    raw = str(arguments.get("vertical", "") or "")
+    return Vertical(raw) if raw else None
 
 
 def build_handlers(actor: str) -> dict[str, mcpserve.Handler]:
@@ -48,7 +67,9 @@ def build_handlers(actor: str) -> dict[str, mcpserve.Handler]:
     from ..api.app import make_studio_service
 
     def generate_creative(**arguments: Any) -> Any:
-        return make_studio_service().generate(_brief(arguments), actor=actor)
+        return make_studio_service().generate(
+            _brief(arguments, n_variants=int(arguments.get("n_variants") or 3)), actor=actor
+        )
 
     def review_variant(**arguments: Any) -> Any:
         variant = Variant(
@@ -58,13 +79,21 @@ def build_handlers(actor: str) -> dict[str, mcpserve.Handler]:
             cta=str(arguments.get("cta", "") or ""),
             channel=Channel(str(arguments.get("channel", ""))),
         )
-        return make_studio_service().review(_brief(arguments), variant, actor=actor)
+        # One variant is supplied and one variant is reviewed.
+        return make_studio_service().review(_brief(arguments, n_variants=1), variant, actor=actor)
 
     def search_brand_corpus(**arguments: Any) -> Any:
+        # The scope is PASSED, not merely declared. This tool advertised `market` and
+        # `vertical` and then built an unscoped RetrievalQuery, so a caller asking for one
+        # market's brand corpus was served every market's. `RetrievalQuery` has carried both
+        # fields all along. An absent value stays None, which is the port's own "no partition"
+        # and a different thing from a value the caller chose.
         return build_container().knowledge_base.search(
             RetrievalQuery(
                 text=str(arguments.get("query", "") or ""),
                 top_k=int(arguments.get("top_k") or 5),
+                market=_optional_market(arguments),
+                vertical=_optional_vertical(arguments),
             )
         )
 
