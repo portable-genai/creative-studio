@@ -2,7 +2,7 @@
 
 Wraps the unified **Google GenAI SDK** (``google-genai``) against the **Gemini Enterprise
 Agent Platform** (Vertex backend). Drafting / narration uses ``gemini-3.5-flash``;
-triage/classification uses ``gemini-3.1-flash-lite`` (both pinned from settings).
+triage/classification uses ``gemini-3.5-flash`` (both pinned from settings).
 
 In D3 the LLM only drafts copy and variant ideas and narrates the already-computed
 deterministic checks (brand / claim / policy / asset). It never decides whether a variant is
