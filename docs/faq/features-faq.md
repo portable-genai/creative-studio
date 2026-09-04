@@ -5,7 +5,7 @@ LLM, and, importantly, where its responsibilities **stop** and a sibling catalog
 over. Cross-references: [`README.md`](../../README.md), [`SPEC.md`](../../SPEC.md),
 [`DEMO.md`](../../DEMO.md).
 
-### What does Mkt3 actually produce?
+### What does `creative-studio` actually produce?
 
 A `CreativeStudioResult`: a set of `VariantReview`s. From a `CreativeBrief` (topic, market,
 vertical, channel, product, offer, audience, tone, number of variants) it drafts marketing
@@ -32,7 +32,7 @@ whether a variant is brand-safe. An auditor can recompute every verdict without 
 No. Every `CreativeStudioResult` sets `requires_human_review=True` (maker-checker, P-06); the
 studio proposes and a qualified human disposes. A variant that fails a check is flagged, not
 shipped, and a blocked guardrail verdict never yields creative. Per rule R8 an escalated result
-is routed to the sibling Hrz7 Human-Review console rather than parked in a per-repo boolean.
+is routed to the sibling `human-review-console` Human-Review console rather than parked in a per-repo boolean.
 
 ### Which capabilities does this repo own vs integrate from the catalog?
 
@@ -41,27 +41,27 @@ plus brand-safety / claim / policy / asset domain logic and its cited outputs. I
 (via the `platform` profile's HTTP adapters) several cross-cutting concerns owned by sibling
 systems; do not rebuild these in a fork:
 
-| Concern | Owned by (catalog id / repo) | Mkt3's role |
+| Concern | Owned by (catalog id / repo) | `creative-studio`'s role |
 |---|---|---|
-| Runtime guardrail: unsafe-content / prompt-injection / jailbreak defense | **Hrz1** `agent-guardrail-gateway` | screens inbound briefs and outbound summaries on every run |
-| Governed knowledge base (the brand book / approved-creative / ad-policy corpus) | **Hrz2** `enterprise-knowledge-base` | ingests the brand corpus into it, retrieves grounded passages for provenance |
-| Agent registry, versioning, identity, discovery | **Hrz3** `agent-registry` | publishes its A2A AgentCard at `/.well-known/agent-card.json` |
-| AI-quality / eval / model-risk promotion gate | **Hrz4** `model-quality-gate` | its eval metrics gate promotion; the offline gate mirrors it |
-| Observability + immutable WORM audit | **Hrz5** `agent-observability` | writes audit events to it; traces spans through it |
-| Human-Review and Maker-Checker console | **Hrz7** `human-review-console` | routes an escalated creative result to it (rule R8) via `review-kit` |
-| Marketing-compliance / final-publication gate | **Mkt6** `marketing-compliance-gate` | Mkt3 screens each variant; Mkt6 governs the go / no-go at publication (rule R7) |
+| Runtime guardrail: unsafe-content / prompt-injection / jailbreak defense | `agent-guardrail-gateway` | screens inbound briefs and outbound summaries on every run |
+| Governed knowledge base (the brand book / approved-creative / ad-policy corpus) | `enterprise-knowledge-base` | ingests the brand corpus into it, retrieves grounded passages for provenance |
+| Agent registry, versioning, identity, discovery | `agent-registry` | publishes its A2A AgentCard at `/.well-known/agent-card.json` |
+| AI-quality / eval / model-risk promotion gate | `model-quality-gate` | its eval metrics gate promotion; the offline gate mirrors it |
+| Observability + immutable WORM audit | `agent-observability` | writes audit events to it; traces spans through it |
+| Human-Review and Maker-Checker console | `human-review-console` | routes an escalated creative result to it (rule R8) via `review-kit` |
+| Marketing-compliance / final-publication gate | `marketing-compliance-gate` | `creative-studio` screens each variant; `marketing-compliance-gate` governs the go / no-go at publication (rule R7) |
 
 So the guardrail, knowledge base, audit sink, eval platform, review console and the
-publication gate are *dependencies*, not features of this repo. Mkt3's own brand / claim /
+publication gate are *dependencies*, not features of this repo. `creative-studio`'s own brand / claim /
 policy / asset engines are the creative-diligence logic, distinct from those platform controls.
 
-### How does Mkt3 relate to the other marketing systems?
+### How does `creative-studio` relate to the other marketing systems?
 
-Mkt3 is the creative-generation and brand-safety studio. Adjacent `mkt` systems handle other
+`creative-studio` is the creative-generation and brand-safety studio. Adjacent `mkt` systems handle other
 points of the marketing lifecycle and should not be duplicated here: campaign planning
 (`campaign-planner`), market intelligence (`market-intelligence`), next-best-action
 (`next-best-action`), performance marketing (`performance-marketing-optimisation`), and the
-marketing-compliance / governance gate (`marketing-compliance-gate`, Mkt6). Check
+marketing-compliance / governance gate (`marketing-compliance-gate`, `marketing-compliance-gate`). Check
 [the organization's repository index](https://github.com/portable-genai) before building a
 capability that may already have a home.
 

@@ -1,7 +1,8 @@
-"""Contract test: the platform evaluation adapter speaks Hrz4's hardened HTTP contract.
+"""Contract test: the platform evaluation adapter speaks model-quality-gate's hardened HTTP
+contract.
 
-Pins the wire shape that the shared **Hrz4 AI Quality / Model-Risk** service expects, so a
-drift in the client body (e.g. reverting to a metric-name list, or a GET gate) fails here
+Pins the wire shape that the shared **model-quality-gate AI Quality / Model-Risk** service expects,
+so a drift in the client body (e.g. reverting to a metric-name list, or a GET gate) fails here
 rather than on the live service:
 
 * ``POST /v1/evaluations`` with a structured ``target``, a top-level ``dataset_id`` equal to

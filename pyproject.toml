@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "creative-studio"
 version = "0.0.1"
-description = "D3 Brand-Safe Creative and Content Studio — Gemini copy + Imagen image with deterministic brand-guideline, advertising-claim, per-market policy and asset-spec validation, generic across banking and online retail and the JP/AU/SG markets, built ports-and-adapters on the Gemini Enterprise Agent Platform."
+description = "Brand-Safe Creative and Content Studio — Gemini copy + Imagen image with deterministic brand-guideline, advertising-claim, per-market policy and asset-spec validation, generic across banking and online retail and the JP/AU/SG markets, built ports-and-adapters on the Gemini Enterprise Agent Platform."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
@@ -17,12 +17,12 @@ keywords = ["creative", "brand-safety", "ad-claims", "imagen", "gemini", "adk", 
 dependencies = [
   # Shared commons, pinned by tag; no build-time coupling. Public repos, so CI
   # installs them with zero credentials. hex-service-kit: outbound S2S, fail-closed net defaults,
-  # StrEnum base, to_jsonable, hash-chained WORM audit. agent-eval-kit: the Hrz4
+  # StrEnum base, to_jsonable, hash-chained WORM audit. agent-eval-kit: the model-quality-gate
   # promotion-gate client the platform eval adapter uses.
   "hex-service-kit @ git+https://github.com/portable-genai/hex-service-kit@v0.0.6",
   "agent-eval-kit @ git+https://github.com/portable-genai/agent-eval-kit@v0.0.1",
   # review-kit: the producer half of rule R8 (route a requires_human_review escalation to the
-  # Hrz7 Human-Review & Maker-Checker Console via the shared client, not a per-repo boolean).
+  # human-review-console Human-Review & Maker-Checker Console via the shared client, not a per-repo boolean).
   "review-kit @ git+https://github.com/portable-genai/review-kit@v0.0.1",
   "pydantic>=2.7",
   "pyyaml>=6.0",

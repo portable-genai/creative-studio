@@ -1,4 +1,4 @@
-# Mkt3: Brand-Safe Creative and Content Studio (`creative-studio`)
+# `creative-studio`: Brand-Safe Creative and Content Studio (`creative-studio`)
 
 **Industries:** Retail & e-commerce, Banking, Consumer goods, Media, Travel & hospitality
 
@@ -9,7 +9,7 @@ per-vertical advertising / consumer-protection policy, and fits the channel asse
 finding is cited back to the rule it enforces, and every result is maker-checker gated
 (`requires_human_review=True`).
 
-Part of the marketing catalog (`mkt` group). Mkt3 is **generic, multi-vertical and APAC**:
+Part of the marketing catalog (`mkt` group). `creative-studio` is **generic, multi-vertical and APAC**:
 banking and online retail are configurable verticals, and Japan, Australia and Singapore are
 first-class markets (residency regions `asia-northeast1` / `australia-southeast1` /
 `asia-southeast1`, locales ja + en), all config + seed, never hard-coded.
@@ -48,12 +48,12 @@ with three adapter families:
 | guardrail | Model Armor | heuristic | NotImplementedError |
 | audit | Cloud Logging (WORM) | append-only SQLite | NotImplementedError |
 | tracer | Cloud Trace (OTel) | no-op | NotImplementedError |
-| evaluation | Gen AI eval (Hrz4) | offline gate | NotImplementedError |
+| evaluation | Gen AI eval (`model-quality-gate`) | offline gate | NotImplementedError |
 | agent_registry | A2A registry | in-process | NotImplementedError |
 | tool_catalog | MCP catalog | in-process | NotImplementedError |
 
 Switch the whole stack with one setting: `MKT_CREATIVE_PROFILE=gcp|local|onprem`. A
-`platform` profile binds thin clients to the shared Hrz1-Hrz5 platform services.
+`platform` profile binds thin clients to the shared `agent-guardrail-gateway`-`agent-observability` platform services.
 
 ## Quick start (offline, no Google Cloud)
 

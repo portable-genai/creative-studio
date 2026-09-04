@@ -168,10 +168,10 @@ adapters:
     platform: creative_studio.adapters.gcp.mcp_tool_catalog:McpToolCatalogAdapter
     local: creative_studio.adapters.local.tool_catalog:LocalToolCatalogAdapter
     onprem: creative_studio.adapters.onprem.tool_catalog:OnPremToolCatalogAdapter
-  # Rule R8: an escalated CreativeStudioResult (requires_human_review) is routed to the Hrz7
+  # Rule R8: an escalated CreativeStudioResult (requires_human_review) is routed to the human-review-console
   # Human-Review & Maker-Checker Console via the shared review-kit, not left as a boolean.
   # local = enqueue to an in-memory outbox (offline demo/tests); gcp/platform = S2S submit to
-  # Hrz7; onprem = fail-fast sovereign placeholder.
+  # human-review-console; onprem = fail-fast sovereign placeholder.
   review_router:
     gcp: creative_studio.adapters.platform.review_router:PlatformReviewRouter
     platform: creative_studio.adapters.platform.review_router:PlatformReviewRouter

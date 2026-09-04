@@ -1,4 +1,4 @@
-# SPEC: Mkt3 Brand-Safe Creative and Content Studio
+# SPEC: `creative-studio` Brand-Safe Creative and Content Studio
 
 ## Purpose
 
@@ -51,7 +51,7 @@ across the Japan / Australia / Singapore markets.
 - **Asset:** channel length limits, required headline / CTA / image, image dimensions and
   aspect ratios, mandatory disclaimer tokens.
 
-## Eval (Hrz4 gate)
+## Eval (`model-quality-gate`)
 
 `eval/run_eval.py` runs the real `CreativeStudioService` over a golden set (both verticals ×
 JP/AU/SG × several channels) and scores: `check_groundedness` (>= 0.80), `citation_accuracy`
@@ -60,8 +60,8 @@ JP/AU/SG × several channels) and scores: `check_groundedness` (>= 0.80), `citat
 (`--use-gcp`) mirrors the metric names and thresholds.
 
 On the `platform` profile the `EvaluationGatePort` is a real HTTP client to the shared
-**Hrz4** AI-quality / model-risk service (not a stub): `evaluate` calls
+`model-quality-gate` (not a stub): `evaluate` calls
 `POST /v1/evaluations` and `gate` calls `POST /v1/gate`, both with a structured `target`
-(model, prompt_version, dataset_id, system) plus a top-level `dataset_id`. Hrz4 picks the
+(model, prompt_version, dataset_id, system) plus a top-level `dataset_id`. `model-quality-gate` picks the
 metric suite server-side from the registered `mkt3-creative` bundle, so the client never
 sends a metric-name list.

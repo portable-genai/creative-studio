@@ -1,6 +1,6 @@
-# Mkt3 demo: Brand-Safe Creative and Content Studio
+# `creative-studio` demo: Brand-Safe Creative and Content Studio
 
-Two ways to demo Mkt3: a fully offline local run (no Google Cloud, deterministic, the default)
+Two ways to demo `creative-studio`: a fully offline local run (no Google Cloud, deterministic, the default)
 and a GCP run on the Gemini Enterprise Agent Platform. Both are generic across banking and
 online retail and selectable across the JP / AU / SG markets.
 
@@ -147,7 +147,7 @@ human review.
 ### GCP eval gate
 
 ```bash
-python eval/run_eval.py --use-gcp      # routes through the Gen AI evaluation service (Hrz4)
+python eval/run_eval.py --use-gcp      # routes through the Gen AI evaluation service (`model-quality-gate`)
 ```
 
 The offline gate and the GCP gate share the same metric names and thresholds

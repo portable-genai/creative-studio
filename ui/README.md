@@ -1,6 +1,6 @@
-# Mkt3 Creative Studio: thin demo console
+# `creative-studio` Creative Studio: thin demo console
 
-A minimal Next.js (App Router) console over the Mkt3 FastAPI backend. It posts a creative
+A minimal Next.js (App Router) console over the `creative-studio` FastAPI backend. It posts a creative
 brief and renders the cited `CreativeStudioResult`: each variant with its deterministic
 brand / claim / policy / asset findings and the maker-checker "human review required" banner.
 
@@ -10,7 +10,7 @@ NEXT_PUBLIC_API_BASE=http://localhost:8102 npm run dev   # then open http://loca
 npm run build                                            # production build (CI builds this)
 ```
 
-Set `NEXT_PUBLIC_API_BASE` to the Mkt3 API (default `http://localhost:8102`). The console owns
+Set `NEXT_PUBLIC_API_BASE` to the `creative-studio` API (default `http://localhost:8102`). The console owns
 no business logic; the backend owns the engines and the citations.
 
 ## Source map

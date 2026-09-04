@@ -60,7 +60,7 @@ The `onprem` adapters are deliberate fail-fast placeholders (they raise
 `Settings` arg, so the *interface contract* for a sovereign migration is proven and enforced
 by CI today. The actual on-prem implementations are the migration work, scoped in
 [`docs/onprem-migration.md`](../onprem-migration.md). This repo is not the sovereign-exit
-*planner* (that is the sibling **Rgc9** `operational-resilience-mapping`, module
+*planner* (that is the sibling `operational-resilience-mapping`, module
 `domain/concentration_exit/`); this repo is one of the systems whose exit that planner
 reasons about.
 
@@ -72,7 +72,7 @@ configuration. They are orthogonal. Each market carries its own in-country resid
 `config/settings.yaml` and the per-market profiles: Japan `asia-northeast1`, Australia
 `australia-southeast1`, Singapore `asia-southeast1`, never a hard-coded branch. A second
 market or region is a settings / tfvars change, not a fork. The residency-violation CI gate
-is the sibling **Rsk3** `architecture-validator` (`domain/residency/`), which a fork should
+is the sibling `architecture-validator` (`domain/residency/`), which a fork should
 run rather than re-implement.
 
 ### How does identity stay portable across hosts?

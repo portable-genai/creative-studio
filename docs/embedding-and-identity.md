@@ -1,4 +1,4 @@
-# Embedding and identity: client integration guide (Mkt3 creative-studio)
+# Embedding and identity: client integration guide (`creative-studio` creative-studio)
 
 This guide shows how an enterprise client runs the D3 Brand-Safe Creative and Content Studio
 and, when desired, embeds its UI inside an existing web application with secure single sign-on
@@ -236,7 +236,7 @@ actor), `principals` (entitlement groups/ACL), `tenant` (multi-tenant partition)
 | On-prem enterprise IdP | `onprem` | Fail-fast `NotImplementedError` placeholder (never returns `ANONYMOUS`); the natural home for a JWKS/OIDC/SAML verifier. | `adapters/onprem/identity.py` |
 
 Where authZ is enforced (defense-in-depth policy enforcement point): the edge (Cloud IAP)
-authenticates at ingress, the Hrz1 guardrail applies central policy, and this backend
+authenticates at ingress, the `agent-guardrail-gateway` applies central policy, and this backend
 re-validates and derives identity itself. Each layer assumes the others may be bypassed.
 
 ## 6. Config knobs

@@ -13,8 +13,8 @@ hosts. It wires together:
 * the reasoning model ``settings.models.reasoning`` (``gemini-3.5-flash``) at ``thinking=high``
   (SPEC §3).
 
-D3 grounds on the brand-guideline corpus via File Search (Hrz2), not public-web research, so it
-carries no ``google_search`` grounding sub-agent.
+D3 grounds on the brand-guideline corpus via File Search (enterprise-knowledge-base), not public-web
+research, so it carries no ``google_search`` grounding sub-agent.
 
 ADK convention is honoured two ways: the module exposes a ``root_agent`` attribute (what ADK /
 ``adk web`` / Agent Runtime discover by default) **and** a ``build_root_agent(settings)`` factory
@@ -55,7 +55,8 @@ _ROOT_INSTRUCTION = (
     "with its citation.\n"
     "- Creative is a consequential output: always state that it requires human review "
     "(maker-checker) before anything ships.\n"
-    "- Final publication is governed by Mkt6 and screened by the Hrz1 guardrail (rules R7 / "
+    "- Final publication is governed by marketing-compliance-gate and screened by the "
+    "agent-guardrail-gateway (rules R7 / "
     "P-13); flag any variant that fails a claim or brand check rather than shipping it."
 )
 

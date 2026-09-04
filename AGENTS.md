@@ -7,7 +7,7 @@ here. Read it first. This file carries only what is specific to this one.
 
 ## What this is
 
-Catalog id **Mkt3**. Brand-safe creative and content studio: the LLM drafts marketing copy
+Catalog id `creative-studio`. Brand-safe creative and content studio: the LLM drafts marketing copy
 and variant ideas, and deterministic engines decide whether each variant is on-brand, makes
 only substantiated advertising claims, meets the per-market and per-vertical advertising and
 consumer-protection policy, and fits the channel asset spec. Banking and online retail are
@@ -18,7 +18,7 @@ and seed rather than hard-coded.
 
 | | |
 |---|---|
-| Catalog id | `Mkt3` |
+| Catalog id | `creative-studio` |
 | Package | `src/creative_studio/` |
 | Profile variable | `MKT_CREATIVE_PROFILE` |
 | Adapter families | `gcp`, `local`, `onprem`, `platform` |

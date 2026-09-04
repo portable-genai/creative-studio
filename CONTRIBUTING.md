@@ -1,4 +1,4 @@
-# Contributing to Mkt3 Creative Studio
+# Contributing to `creative-studio` Creative Studio
 
 Thanks for your interest. This is an engineering-portfolio reference repo; the bar is that
 every change keeps the offline gate green and respects the hexagonal boundaries.
@@ -23,7 +23,7 @@ pytest -m 'not integration' -q  # unit + contract
 python eval/run_eval.py         # eval smoke check (exit 0)
 ```
 
-All five must pass. `python eval/run_eval.py --mode gate` is the Hrz4 promotion verdict
+All five must pass. `python eval/run_eval.py --mode gate` is the `model-quality-gate` promotion verdict
 and needs the platform/gcp profile; it is not part of the offline gate.
 
 ## Architecture rules (hexagon)
@@ -36,7 +36,7 @@ and needs the platform/gcp profile; it is not part of the offline gate.
 - **Adding a port:** declare the Protocol, re-export it, add the profile bindings in
   `config/settings.yaml`, provide the on-prem stub, and extend the contract test.
 - **The shared service layer comes from the commons.** The StrEnum base, the hash-chained
-  WORM audit store, the fail-closed CORS rule and the Hrz4 promotion-gate client are
+  WORM audit store, the fail-closed CORS rule and the `model-quality-gate` promotion-gate client are
   `hex-service-kit` / `agent-eval-kit` (pinned by tag in `pyproject.toml`, exact SHA in
   the lockfiles). Fix shared behaviour there, then bump the pin; do not re-inline a copy.
 

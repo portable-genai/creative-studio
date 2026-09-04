@@ -85,7 +85,8 @@ def test_review_catches_non_compliant_variant(local_container: Container) -> Non
 
 
 def test_generate_grounds_result_in_brand_corpus(local_container: Container) -> None:
-    """B2: the Hrz2 brand corpus is consulted, so the result cites corpus passages, not only
+    """B2: the enterprise-knowledge-base brand corpus is consulted, so the result cites corpus
+    passages, not only
     the deterministic rule sets. Guards against the KnowledgeBasePort being injected but unused."""
     service = _service(local_container)
     brief = CreativeBrief(

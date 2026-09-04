@@ -1,4 +1,5 @@
-"""Serve the governed tool catalog Mkt4 already declares, over MCP 2026-07-28.
+"""Serve the governed tool catalog performance-marketing-optimisation already declares, over MCP
+2026-07-28.
 
 The catalog declared three governed tools and served none of them: there was no MCP server
 process anywhere in the fleet. This supplies the callables that answer the existing catalog and
@@ -105,7 +106,9 @@ def build_handlers(actor: str) -> dict[str, mcpserve.Handler]:
 
 
 def build_server(actor: str, *, with_audit_tools: bool = True) -> Any:
-    """Build the MCP server for Mkt4's catalog, refusing on any catalog/handler mismatch."""
+    """Build the MCP server for performance-marketing-optimisation's catalog, refusing on any
+    catalog/handler mismatch.
+    """
     container = build_container()
     return mcpserve.build_server(
         name="creative-studio",
