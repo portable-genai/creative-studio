@@ -96,7 +96,8 @@ class CreativeStudioService:
         self._policy = policy or PolicyValidationService()
         self._asset = asset or AssetSpecService()
         self._dedup = dedup or VariantDedupService()
-        # Rule R8: route an escalated result to Hrz7 after it is assembled and audited. Optional
+        # Rule R8: route an escalated result to human-review-console after it is assembled and
+        # audited. Optional
         # so a service built without a router still assembles and audits the escalated result; it
         # just is not forwarded to a console.
         self._review_router = review_router
@@ -123,7 +124,8 @@ class CreativeStudioService:
                 variants = tuple(self._attach_image(v, brief) for v in variants)
 
             reviews = tuple(self._review_variant(v, brief) for v in variants)
-            # Ground the result in the Hrz2 brand corpus (B2): the deterministic checks decide
+            # Ground the result in the enterprise-knowledge-base brand corpus (B2): the
+            # deterministic checks decide
             # the verdicts, and the brand-book / prior-creative passages add provenance so the
             # result cites the corpus, not only the rule sets. Best-effort, never blocks.
             brand_corpus = self._ground(brief)
@@ -141,7 +143,8 @@ class CreativeStudioService:
             )
             self._guard(summary, Direction.OUTPUT, actor, action="generate_creative")
             self._record(result, actor)
-            # Rule R8: hand the already-assembled, already-audited escalation to Hrz7 for human
+            # Rule R8: hand the already-assembled, already-audited escalation to
+            # human-review-console for human
             # review. Routing is a hand-off, never fatal to a result that is already assembled and
             # audited (the audit ESCALATED record is the durable escalation of record).
             if self._review_router is not None and result.requires_human_review:
@@ -186,7 +189,8 @@ class CreativeStudioService:
         return VariantReview(variant=variant, brand=brand, claim=claim, policy=policy, asset=asset)
 
     def _ground(self, brief: CreativeBrief) -> tuple[Citation, ...]:
-        """Consult the Hrz2 brand corpus for passages relevant to this brief (B2).
+        """Consult the enterprise-knowledge-base brand corpus for passages relevant to this brief
+        (B2).
 
         Returns the citations of the retrieved brand-book / prior-creative passages so the
         assembled result is grounded in the corpus rather than only the deterministic rule

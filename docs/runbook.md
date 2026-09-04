@@ -1,6 +1,6 @@
-# Runbook: Mkt3 Brand-Safe Creative and Content Studio
+# Runbook: `creative-studio` Brand-Safe Creative and Content Studio
 
-Operational notes for deploying and running Mkt3 on the Gemini Enterprise Agent Platform in a
+Operational notes for deploying and running `creative-studio` on the Gemini Enterprise Agent Platform in a
 residency region (defaults `asia-southeast1`; JP and AU are per-market overrides). This is a
 reference build; adapt it to your own change-management and model-risk sign-off before any live
 use.

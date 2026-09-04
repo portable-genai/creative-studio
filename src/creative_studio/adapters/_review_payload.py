@@ -1,14 +1,14 @@
 """Shared conversion from an escalated creative result to an ``review-kit`` Review payload.
 
-Lives in the adapter layer (not the pure domain) because it depends on the kit. Mkt3 handles a
-brief and brand context and has no customer-PII surface (R1: PII redaction n/a), but the review
-console is a shared sink, so the descriptor, summary and citation snippets are still scrubbed
+Lives in the adapter layer (not the pure domain) because it depends on the kit. creative-studio
+handles a brief and brand context and has no customer-PII surface (R1: PII redaction n/a), but the
+review console is a shared sink, so the descriptor, summary and citation snippets are still scrubbed
 defensively for stray contact identifiers before they leave the process (P-04 boundary, defense in
-depth); Hrz7 redacts again before its own audit write. The repo carries no redaction adapter or
-``pii-kit`` dependency, so the masking here is a small, self-contained local pattern set (email /
-phone), not a shared pack. The maker (the agent that originated the creative) and the tenant are
-asserted here and trusted by Hrz7 because this is an authenticated S2S caller (per-hop OBO is the
-deferred next layer).
+depth); human-review-console redacts again before its own audit write. The repo carries no redaction
+adapter or ``pii-kit`` dependency, so the masking here is a small, self-contained local pattern set
+(email / phone), not a shared pack. The maker (the agent that originated the creative) and the
+tenant are asserted here and trusted by human-review-console because this is an authenticated S2S
+caller (per-hop OBO is the deferred next layer).
 """
 
 from __future__ import annotations
@@ -24,7 +24,8 @@ from ..domain.models import CreativeStudioResult, Finding, RuleSeverity
 # copying the entire evidence set into the review console.
 _MAX_CITATIONS = 8
 
-# Defensive local redaction: Mkt3 has no customer-PII surface and no redaction adapter, so this
+# Defensive local redaction: creative-studio has no customer-PII surface and no redaction adapter,
+# so this
 # is a minimal contact-identifier mask (email + international/local phone), applied so no stray
 # identifier that slipped into a brief or brand snippet reaches the shared console over the wire.
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
@@ -81,7 +82,9 @@ def _findings_count(result: CreativeStudioResult) -> int:
 
 
 def result_to_review(result: CreativeStudioResult, *, maker: str, tenant: str = "") -> Review:
-    """Build the review a producer submits to Hrz7 when a creative result escalates."""
+    """Build the review a producer submits to human-review-console when a
+    creative result escalates.
+    """
     brief = result.brief
     descriptor = (
         f"Creative for {brief.vertical.value}/{brief.market.value} via {brief.channel.value}: "

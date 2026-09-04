@@ -1,4 +1,4 @@
-# Demo scripts - Mkt3 Brand-Safe Creative & Content Studio
+# Demo scripts - `creative-studio` Brand-Safe Creative & Content Studio
 
 All scripts are SDK-free and run against the in-process `local` stack (no Google Cloud, no
 API key). They drive the real `CreativeStudioService` over four synthetic (topic, market,

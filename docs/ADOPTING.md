@@ -88,7 +88,7 @@ touch the human decisions below.
    use obviously-fake brands and offers. Replace the seed with your brand book, approved
    creative and ad-policy notes, and swap the fixtures for your own synthetic data.
    **Do not run against live campaigns without your own legal, security and model-risk
-   sign-off, and Mkt6 still governs publication (rule R7).**
+   sign-off, and `marketing-compliance-gate` still governs publication (rule R7).**
 5. **Eval golden set.** Rebuild `eval/datasets/` and the rubrics for your brand and markets: a
    fork inherits a green gate that measures the WRONG thing until you do. The gate structure is
    generic; the golden cases are yours.
@@ -101,9 +101,9 @@ touch the human decisions below.
 This repo is one system in a catalog of composable GRC systems. Several concerns it *touches*
 are owned by sibling platform services, and you should integrate rather than rebuild them (see
 [`docs/faq/features-faq.md`](faq/features-faq.md) for the full map): the guardrail gateway
-(Hrz1), the governed brand knowledge base (Hrz2), the agent registry (Hrz3), the AI-quality /
-eval gate (Hrz4), observability + WORM audit (Hrz5), the human-review console (Hrz7, rule R8),
-and the marketing-compliance publication gate (Mkt6, rule R7). The `platform` profile's
+(`agent-guardrail-gateway`), the governed brand knowledge base (`enterprise-knowledge-base`), the agent registry (`agent-registry`), the AI-quality /
+eval gate (`model-quality-gate`), observability + WORM audit (`agent-observability`), the human-review console (`human-review-console`, rule R8),
+and the marketing-compliance publication gate (`marketing-compliance-gate`, rule R7). The `platform` profile's
 adapters are already thin HTTP clients to those services.
 
 ## 6. Adoption checklist
@@ -115,5 +115,5 @@ adapters are already thin HTTP clients to those services.
 - [ ] Replaced the seed brand corpus and every synthetic fixture.
 - [ ] Rebuilt the eval golden set + rubrics for your brand and markets.
 - [ ] Reviewed the deploy posture (Dockerfile, Terraform, bind address).
-- [ ] Decided which sibling platform services you integrate vs stub (including Mkt6).
+- [ ] Decided which sibling platform services you integrate vs stub (including `marketing-compliance-gate`).
 - [ ] Recorded your baseline upstream tag so you can take future fixes.

@@ -1,7 +1,7 @@
 # FAQ index
 
 Answers to the questions different teams ask when evaluating, adopting, or reviewing this
-repository (Mkt3, the Brand-Safe Creative and Content Studio) as a common base. Each file is
+repository (`creative-studio`, the Brand-Safe Creative and Content Studio) as a common base. Each file is
 written for a specific audience; skim the one that matches your role.
 
 | FAQ | For | Answers |

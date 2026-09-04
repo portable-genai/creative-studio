@@ -18,7 +18,7 @@ client-IdP placeholder.
 
 ### How is multi-tenant isolation handled? Is there object-level authz?
 
-Mkt3 stores **no tenant-partitioned customer data** (C2 is N-A). The only data store is the
+`creative-studio` stores **no tenant-partitioned customer data** (C2 is N-A). The only data store is the
 shared internal brand corpus (brand book, approved creative, ad-policy notes), scoped, not
 secured, by `market:` / `vertical:` tags in `adapters/local/knowledge_base.py`. Identity still
 resolves `tenant` plus entitlement principals server-side, but there is no per-tenant resource
@@ -32,14 +32,14 @@ No (C3 / C4 are N-A). Inputs are marketing-brief fields (topic, product, offer, 
 tone) and the internal brand corpus; audit stores the brief text and the summary, not customer
 records. There is no runtime PII redactor and no `pii_safety` eval metric because no customer
 PII is processed. Unsafe-content screening (Model Armor on `gcp`, a heuristic locally) is the
-Hrz1 guardrail concern, consumed on every run's input and output, not re-implemented here.
+`agent-guardrail-gateway` concern, consumed on every run's input and output, not re-implemented here.
 
 ### What about the service-to-service calls in the `platform` profile?
 
-The one real outbound call (the Hrz4 eval client) is re-based on the shared
+The one real outbound call (the `model-quality-gate` eval client) is re-based on the shared
 `PromotionGateClient`: it attaches an S2S bearer credential and enforces an https-only
 base-URL guard (plaintext non-loopback URLs are rejected at construction, which is why the
-respx contract tests use an https fixture URL). The Hrz7 review router (`review-kit`) does
+respx contract tests use an https fixture URL). The `human-review-console` review router (`review-kit`) does
 its S2S submission the same way. The remaining platform delegates are phase stubs.
 
 ### Is the demo / dev server safe? Does anything bind 0.0.0.0 by default?
@@ -65,7 +65,7 @@ hash chain with SQLite `UPDATE` / `DELETE` triggers enforcing append-only, JSONL
 restore, `verify_chain()`, and an honest-limits docstring. Proven by
 `tests/unit/test_audit_chain.py`. In production the `gcp` profile uses a locked WORM bucket
 (`retention_days: 2557`, ~7 years). This repo does not *replace* the platform audit system
-(Hrz5); see [features-faq.md](features-faq.md).
+(`agent-observability`); see [features-faq.md](features-faq.md).
 
 ### Supply chain: are dependencies pinned and scanned?
 

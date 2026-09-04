@@ -1,6 +1,6 @@
-# Architecture: Mkt3 Brand-Safe Creative and Content Studio
+# Architecture: `creative-studio` Brand-Safe Creative and Content Studio
 
-Mkt3 is a **ports-and-adapters (hexagonal)** service. The pure domain is the heart; every
+`creative-studio` is a **ports-and-adapters (hexagonal)** service. The pure domain is the heart; every
 external capability is a Protocol with swappable adapter families. The deterministic engines
 own every consequential decision; the LLM only drafts copy and narrates.
 
@@ -11,7 +11,7 @@ own every consequential decision; the LLM only drafts copy and narrates.
  CLI / API  |  gcp (Gemini, Imagen, File Search, Model Armor, ...) |
    |        |  local (templated copy, FTS5 corpus, heuristics)     |
    v        |  onprem (fail-fast placeholders)                     |
- deps  -->  |  platform (thin HTTP clients to Hrz1..Hrz5)              |
+ deps  -->  |  platform (thin HTTP clients to `agent-guardrail-gateway`..`agent-observability`)              |
    |        +-----------------------------------------------------+
    v                         ^  (Protocols / ports)
  CreativeStudioService  -----+
@@ -58,8 +58,8 @@ profile raises rather than binding something nobody chose.
   Cloud Trace, Gen AI eval, A2A, MCP). All Google imports are lazy.
 - `onprem`: fail-fast `NotImplementedError` placeholders satisfying the same Protocols
   (exit-portability proof).
-- `platform`: thin HTTP clients to the shared Hrz1-Hrz5 platform services. The
-  `EvaluationGatePort` is a real client to **Hrz4** (`POST /v1/evaluations` + `POST /v1/gate`),
+- `platform`: thin HTTP clients to the shared `agent-guardrail-gateway`-`agent-observability` platform services. The
+  `EvaluationGatePort` is a real client to `model-quality-gate` (`POST /v1/evaluations` + `POST /v1/gate`),
   with the metric suite chosen server-side by the registered `mkt3-creative` bundle.
 
 The contract test imports + constructs every `local` and `onprem` adapter with no Google SDK
