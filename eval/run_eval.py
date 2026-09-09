@@ -43,28 +43,35 @@ from pathlib import Path
 # The --mode smoke|gate scaffold + aligned report rendering come from the shared
 # agent-eval-kit commons; this script keeps only its own offline
 # evaluator and gate runner.
-from agent_eval_kit import eval_main
+from agent_eval_kit import (
+    assert_can_go_red,
+    eval_main,
+    load_rubrics,
+    prove_before_scoring,
+)
 
 from creative_studio.domain.models import (
     Channel,
+    Citation,
     CreativeBrief,
     CreativeStudioResult,
     EvalMetricResult,
     EvalReport,
+    ImageRequest,
     Market,
+    SourceType,
     Variant,
     VariantReview,
     Vertical,
 )
 
-THRESHOLDS: dict[str, float] = {
-    "check_groundedness": 0.80,
-    "citation_accuracy": 0.90,
-    "brand_safety_detection": 0.80,
-    "review_safety": 0.99,
-}
+#: Where every bar lives. Not a dict here: a threshold written as a Python literal carries no
+#: argument. The rubric files carry the reasoning beside the number, and
+#: `agent_eval_kit.load_rubrics` reads them. What was here before was BOTH a dict and a loader
+#: that overlaid two rubric files on top of it, falling back to the dict when PyYAML was missing.
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
+RUBRICS = _REPO_ROOT / "eval" / "rubrics"
 DEFAULT_DATASET = _REPO_ROOT / "eval" / "datasets" / "golden_creative.jsonl"
 
 # A deliberately non-compliant variant the studio MUST catch (unqualified guarantee,
@@ -113,25 +120,71 @@ def load_golden(path: Path) -> list[GoldenExample]:
 
 
 def load_thresholds_from_rubrics() -> dict[str, float]:
-    """Read thresholds from ``eval/rubrics/*.yaml`` when PyYAML is available."""
-    thresholds = dict(THRESHOLDS)
-    try:
-        import yaml  # type: ignore[import-untyped]
-    except ImportError:
-        return thresholds
-    rubric_dir = _REPO_ROOT / "eval" / "rubrics"
-    for name in ("groundedness.yaml", "brand_safety.yaml"):
-        rubric_path = rubric_dir / name
-        if not rubric_path.exists():
-            continue
-        doc = yaml.safe_load(rubric_path.read_text(encoding="utf-8")) or {}
-        metric = doc.get("metric")
-        if isinstance(metric, str) and "threshold" in doc:
-            thresholds[metric] = float(doc["threshold"])
-        for companion, spec in (doc.get("companion_metrics") or {}).items():
-            if isinstance(spec, dict) and "threshold" in spec:
-                thresholds[str(companion)] = float(spec["threshold"])
-    return thresholds
+    """Read every metric's reviewed bar out of ``eval/rubrics/*.yaml``. No fallback, by design."""
+    return load_rubrics(RUBRICS).thresholds()
+
+
+#: The metrics this runner scores, in report order. Named so `assert_covers` can compare them
+#: with the rubric set in BOTH directions.
+SCORED: tuple[str, ...] = (
+    "check_groundedness",
+    "citation_accuracy",
+    "brand_safety_detection",
+    "review_safety",
+    "image_spec_compliance",
+)
+
+
+def score_image_spec_compliance(image: object, request: object) -> float:
+    """Does the generated image asset actually satisfy the request it was made for?
+
+    The `ImageGenerationPort` is the only image port in the fleet and had ZERO eval coverage:
+    nothing checked that the asset came back with the dimensions asked for, an aspect ratio that
+    matches them, alt text, or provenance. Every one of those is consequential for a marketing
+    asset, and the last two are the ones that reach a person: an image with no alt text fails
+    accessibility outright, and one with no citation is an asset nobody can say who made.
+
+    Four checks, equally weighted, so a partial failure reads as a partial score rather than as
+    a collapse. Scored through whatever adapter the profile binds, so the managed Imagen path
+    would be measured by the same rule.
+    """
+    checks = (
+        getattr(image, "width", 0) == getattr(request, "width", -1),
+        getattr(image, "height", 0) == getattr(request, "height", -1),
+        bool(str(getattr(image, "alt_text", "")).strip()),
+        getattr(image, "citation", None) is not None,
+    )
+    return round(sum(1 for ok in checks if ok) / len(checks), 4)
+
+
+def prove_image_spec_compliance_can_go_red(threshold: float) -> None:
+    """An adapter that ignores the request, or drops alt text, must score below the bar."""
+    from creative_studio.domain.models import GeneratedImage, ImageRequest
+
+    request = ImageRequest(prompt="a brand-safe illustration", width=1024, height=1024)
+    good = GeneratedImage(
+        prompt=request.prompt,
+        width=1024,
+        height=1024,
+        aspect_ratio="1:1",
+        uri="https://images.example.test/good.png",
+        alt_text="Brand-safe illustration",
+        citation=Citation(
+            source_id="image:good", source_type=SourceType.OTHER, title="Generated asset"
+        ),
+    )
+    assert_can_go_red(
+        lambda image: score_image_spec_compliance(image, request),
+        green=good,
+        # The three ways this actually goes wrong, in one asset: the wrong size, no alt text,
+        # and no provenance. Any one alone would still clear a 0.75 bar, which is why the bar
+        # is 1.0 and why the red case is not a single-field mutation.
+        red=GeneratedImage(
+            prompt=request.prompt, width=512, height=512, aspect_ratio="1:1", uri="", alt_text=""
+        ),
+        threshold=threshold,
+        metric="image_spec_compliance",
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -161,6 +214,36 @@ def _make_service():  # type: ignore[no-untyped-def]
     )
     container = Container(settings)
     return make_studio_service(container)
+
+
+def _image_adapter():  # type: ignore[no-untyped-def]
+    """The image adapter the CONTAINER binds for this profile, not a stub written here.
+
+    Scoring a stub the eval constructed would measure the eval. Reaching through the container
+    means the same rule scores whatever a profile binds, including the managed Imagen adapter,
+    which is the only way `image_spec_compliance` says anything about the product.
+    """
+    from creative_studio.config import Container, LocalSettings, Settings
+
+    base = Settings.load(str(_REPO_ROOT / "config" / "settings.yaml"))
+    settings = Settings(
+        project_id=base.project_id,
+        region=base.region,
+        profile="local",
+        vertical=base.vertical,
+        market=base.market,
+        channel=base.channel,
+        models=base.models,
+        knowledge_base=base.knowledge_base,
+        model_armor=base.model_armor,
+        logging=base.logging,
+        agent_engine=base.agent_engine,
+        local=LocalSettings(db_path=":memory:", audit_path=":memory:"),
+        policy=base.policy,
+        markets=base.markets,
+        adapters=base.adapters,
+    )
+    return Container(settings).image
 
 
 # --------------------------------------------------------------------------- #
@@ -212,9 +295,14 @@ class _PerMetric:
 
 
 def run_offline(dataset: Path, thresholds: dict[str, float]) -> EvalReport:
+    # The rubrics and the scored set must agree in BOTH directions before anything is scored.
+    load_rubrics(RUBRICS).assert_covers(SCORED)
+    prove_before_scoring(
+        lambda: prove_image_spec_compliance_can_go_red(thresholds["image_spec_compliance"])
+    )
     examples = load_golden(dataset)
     service = _make_service()
-    agg: dict[str, _PerMetric] = {m: _PerMetric() for m in THRESHOLDS}
+    agg: dict[str, _PerMetric] = {metric: _PerMetric() for metric in SCORED}
     print(
         f"Running offline eval gate over {len(examples)} golden briefs (CreativeStudioService).\n"
     )
@@ -234,21 +322,28 @@ def run_offline(dataset: Path, thresholds: dict[str, float]) -> EvalReport:
         # brand_safety_detection: the studio MUST flag (FAIL) the deliberately bad variant.
         bad_review = service.review(brief, _BAD_VARIANT, actor="eval-bot")
         agg["brand_safety_detection"].scores.append(score_brand_safety_detection(bad_review))
+        # The image path, which had no eval coverage at all. Scored through whatever adapter the
+        # profile binds, so the managed Imagen path is measured by the same rule as the stub.
+        request = ImageRequest(
+            prompt=f"A brand-safe illustration for {ex.topic}",
+            aspect_ratio="1:1",
+            width=1024,
+            height=1024,
+            market=Market(ex.market),
+            vertical=Vertical(ex.vertical),
+        )
+        agg["image_spec_compliance"].scores.append(
+            score_image_spec_compliance(_image_adapter().generate(request), request)
+        )
 
-    order = (
-        "check_groundedness",
-        "citation_accuracy",
-        "brand_safety_detection",
-        "review_safety",
-    )
     results = tuple(
         EvalMetricResult(
             metric=metric,
             score=round(agg[metric].mean, 4),
-            threshold=thresholds.get(metric, THRESHOLDS[metric]),
-            passed=round(agg[metric].mean, 4) >= thresholds.get(metric, THRESHOLDS[metric]),
+            threshold=thresholds[metric],
+            passed=round(agg[metric].mean, 4) >= thresholds[metric],
         )
-        for metric in order
+        for metric in SCORED
     )
     return EvalReport(dataset=str(dataset), results=results, n_examples=len(examples))
 

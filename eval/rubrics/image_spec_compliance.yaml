@@ -1,0 +1,45 @@
+# Scored by: eval/run_eval.py::score_image_spec_compliance over the image the CONTAINER's bound
+# adapter returns, not a stub the eval constructed. Scoring a stub written here would measure the
+# eval; reaching through the container means the same rule scores whatever a profile binds,
+# including the managed Imagen adapter.
+#
+# Why this metric is new. `ImageGenerationPort` is the only image port in the fleet and it had
+# ZERO eval coverage. Nothing checked that the asset came back at the dimensions asked for, with
+# alt text, or with provenance. All four are consequential for a marketing asset, and the last
+# two are the ones that reach a person: an image with no alt text fails accessibility outright,
+# and one with no citation is an asset nobody can say who made.
+metric: image_spec_compliance
+description: >
+  The generated image satisfies the request it was made for: the width and height asked for,
+  non-empty alt text, and a provenance citation naming the model that produced it.
+threshold: 1.0
+direction: maximize
+applies_to:
+  - ImageGenerationPort.generate
+criteria:
+  - id: width_matches
+    description: The asset's width is the width the request asked for.
+    weight: 0.25
+  - id: height_matches
+    description: The asset's height is the height the request asked for.
+    weight: 0.25
+  - id: alt_text_present
+    description: The asset carries non-empty alt text. An image without it fails accessibility.
+    weight: 0.25
+  - id: provenance_present
+    description: The asset carries a citation naming the generating model and prompt.
+    weight: 0.25
+scoring:
+  scale: [0.0, 1.0]
+  pass_if: "score >= threshold"
+denominator:
+  # 1.0 rather than a rate, and the four equally-weighted checks are why. At 0.75 a single
+  # missing field would pass, and the single missing field that matters most (alt text) is
+  # exactly the one a busy adapter drops. All four or none.
+  kind: all-or-nothing
+  over: one generated asset per golden brief
+falsified_by: >
+  eval/run_eval.py::prove_image_spec_compliance_can_go_red, run before any score is trusted. The
+  red case is one asset carrying the three failures that actually happen together: the wrong
+  size, no alt text and no provenance. A single-field mutation would still clear a 0.75 bar,
+  which is the argument for the bar being 1.0.

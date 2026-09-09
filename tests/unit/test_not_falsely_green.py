@@ -17,8 +17,8 @@ import pytest
 from agent_eval_kit import assert_can_go_red
 from eval.run_eval import (
     _BAD_VARIANT,
-    THRESHOLDS,
     _make_service,
+    load_thresholds_from_rubrics,
     score_brand_safety_detection,
     score_citation_accuracy,
     score_groundedness,
@@ -34,6 +34,11 @@ from creative_studio.domain.models import (
     Variant,
     Vertical,
 )
+
+#: The reviewed bars, read from `eval/rubrics/*.yaml` exactly as the gate reads them.
+#: The module-level dict this used to import is gone: having both was two homes for one
+#: number, with a silent fallback path that used the one nobody reviews.
+THRESHOLDS = load_thresholds_from_rubrics()
 
 _ACTOR = "eval-bot"
 
@@ -138,3 +143,36 @@ def test_review_safety_can_go_red(result: CreativeStudioResult) -> None:
         threshold=THRESHOLDS["review_safety"],
         metric="review_safety",
     )
+
+
+def test_the_image_metric_can_go_red() -> None:
+    """Run the SHIPPED proof: the only image port in the fleet had zero eval coverage.
+
+    The red case is one asset carrying the three failures that actually happen together, the
+    wrong size, no alt text and no provenance, because a single-field mutation would still clear
+    a 0.75 bar. That is the argument for the bar being 1.0.
+    """
+    from eval.run_eval import prove_image_spec_compliance_can_go_red
+
+    prove_image_spec_compliance_can_go_red(THRESHOLDS["image_spec_compliance"])
+
+
+def test_the_image_metric_scores_the_adapter_the_container_binds() -> None:
+    """Not a stub the eval wrote, which would measure the eval rather than the product."""
+    from eval.run_eval import _image_adapter, score_image_spec_compliance
+
+    from creative_studio.domain.models import ImageRequest
+
+    request = ImageRequest(prompt="a brand-safe illustration", width=1024, height=1024)
+    assert score_image_spec_compliance(_image_adapter().generate(request), request) == 1.0
+
+
+def test_every_scored_metric_has_a_reviewed_bar_and_every_bar_is_scored() -> None:
+    """Both directions. Three of the five metrics had no rubric at all before this."""
+    from agent_eval_kit import load_rubrics
+    from agent_eval_kit.rubrics import RubricError
+    from eval.run_eval import RUBRICS, SCORED
+
+    load_rubrics(RUBRICS).assert_covers(SCORED)
+    with pytest.raises(RubricError, match="reads as governance"):
+        load_rubrics(RUBRICS).assert_covers(SCORED[:-1])
