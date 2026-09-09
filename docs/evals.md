@@ -59,7 +59,7 @@ it is rather than the rule being guessed from the number.
 | `check_groundedness` | 0.8 | a rate; needs 5 positives | Fraction of findings that carry at least one citation to the rule / policy / spec they enforce. A finding raised without a citation fails. |
 | `citation_accuracy` | 0.9 | a rate; needs 10 positives | Fraction of cited sources whose type is one of the four rule namespaces (brand, claim, policy, asset). No fabricated citations. |
 | `image_spec_compliance` | 1 | all or nothing | The generated image satisfies the request it was made for: the width and height asked for, non-empty alt text, and a provenance citation naming the model that produced it. |
-| `review_safety` | 0.99 | all or nothing | Every creative result requires human review before anything is published, and the escalation is routed rather than left as a flag. |
+| `review_safety` | 1 | all or nothing | Every creative result requires human review before anything is published, and the escalation is routed rather than left as a flag. |
 
 Scored over 6 golden creative briefs.
 
