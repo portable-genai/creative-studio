@@ -1,0 +1,19 @@
+# Narrative quality floors for the marketing COPY. Owner: model risk.
+#
+# This gate scored one thing about copy quality and it was one-sided: whether the studio flags a
+# deliberately bad probe. That proves the detector fires; it says nothing about whether the copy
+# the studio actually writes is any good, and the golden set carried no expected outputs at all.
+# In a service whose product IS the copy, that is the measurement most obviously missing.
+#
+# Two bars, and the difference between them is the point:
+#   floor   below this the profile MUST NOT serve this vertical. Not "degraded". Unfit.
+#   target  at or above this the profile is at full quality. Between the two is DEGRADED.
+schema = "quality-floors/v1"
+owner = "model risk (the model-quality-gate promotion authority)"
+
+[verticals.mkt3-creative]
+floor = 0.65
+target = 0.88
+note = """Copy a marketing reviewer reads before it is published. The brand-safety detector \
+catches what is forbidden; nothing else catches copy that is merely bad, and bad copy that is \
+brand-safe is what gets published."""

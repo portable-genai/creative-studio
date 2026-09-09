@@ -1,0 +1,15 @@
+# The degradation table for the marketing COPY itself. One row per case, each written once per
+# profile, with the band each is expected to land in against the floor in
+# config/quality-floors.toml.
+#
+# This is the half the existing gate could not see. brand_safety_detection is a one-sided probe:
+# it proves the studio flags deliberately bad copy, which says nothing about whether the copy the
+# studio writes is any good, and the golden set carried no expected outputs at all.
+#
+# `regressed` is the deliberate control and is expected "unfit" in every row.
+#
+# The forbidden claims are the ones a brand-safety rule pack does not catch because they are not
+# unsafe, only wrong: an unsubstantiated superlative, a promise the product does not make, and a
+# call to action that names no action. All products and brands are fictional.
+{"id": "copy-savings-account", "vertical": "mkt3-creative", "subject": "a savings account launch", "criteria": [{"name": "says_what_the_product_is", "must_cover": ["a savings account", "the rate is variable", "eligibility applies"], "must_cite": ["kb-savings-terms"], "must_not_say": ["the best rate anywhere", "guaranteed returns", "learn more"], "weight": 2.0}, {"name": "gives_the_reader_something_to_do", "must_cover": ["compare the rate before you switch"], "must_not_say": ["act now"]}], "candidates": {"managed": "A savings account with a variable rate, where eligibility applies. Compare the rate before you switch. Terms at kb-savings-terms.", "reduced": "A savings account with a variable rate. See kb-savings-terms.", "regressed": "The best rate anywhere, with guaranteed returns. Act now, learn more."}, "expected": {"managed": "fit", "reduced": "degraded", "regressed": "unfit"}}
+{"id": "copy-travel-card", "vertical": "mkt3-creative", "subject": "a travel card promotion", "criteria": [{"name": "states_the_offer_and_its_limits", "must_cover": ["no foreign transaction fee", "the exchange rate is set daily", "an annual fee applies"], "must_cite": ["kb-travel-card-terms"], "must_not_say": ["free money abroad", "no fees at all", "unlimited"], "weight": 2.0}, {"name": "keeps_the_claim_checkable", "must_cover": ["the fee is published in the terms"], "must_not_say": ["everyone qualifies"]}], "candidates": {"managed": "No foreign transaction fee, with an exchange rate set daily and an annual fee that applies. The fee is published in the terms at kb-travel-card-terms.", "reduced": "No foreign transaction fee. An annual fee applies. See kb-travel-card-terms.", "regressed": "Free money abroad with no fees at all and unlimited spending. Everyone qualifies."}, "expected": {"managed": "fit", "reduced": "degraded", "regressed": "unfit"}}

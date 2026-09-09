@@ -1,0 +1,20 @@
+# Scored by: eval/run_eval.py::score_citation_accuracy against the studio result's OWN retrieved
+# evidence set. A cited source outside it is invented provenance.
+metric: citation_accuracy
+description: >
+  Share of the result's citations that resolve to a source the studio actually retrieved. A
+  citation to anything else is invented provenance.
+threshold: 0.90
+direction: maximize
+applies_to:
+  - CreativeStudioResult.citations
+criteria:
+  - id: resolves_to_retrieved_evidence
+    description: The cited source id is in the result's own retrieved evidence set.
+    weight: 1.0
+scoring:
+  scale: [0.0, 1.0]
+  pass_if: "score >= threshold"
+denominator:
+  kind: rate
+  over: citations the results carry

@@ -46,6 +46,15 @@ test:
 eval:
 	$(BIN)/python eval/run_eval.py
 
+eval-narrative:
+	$(BIN)/python eval/run_narrative_eval.py
+
+evals-doc:
+	$(BIN)/python scripts/render_evals_doc.py
+
+evals-doc-check:
+	$(BIN)/python scripts/render_evals_doc.py --check
+
 # The full gate, green before any change lands.
 portability:
 	PYTHONPATH=src $(BIN)/python scripts/portability_demo.py
@@ -56,7 +65,7 @@ plugin: ## Render the Agent Plugins 1.0.0 directory from this repo's own declara
 mcp-serve: ## Serve the governed tool catalog over MCP 2026-07-28 (stdio; needs [gcp]).
 	python -m creative_studio.mcp
 
-gate: lint format typecheck test eval demo-selftest portability plugin
+gate: lint format typecheck test eval eval-narrative evals-doc-check demo-selftest portability plugin
 
 ui-install: ## Install the console's locked dependencies (proves package-lock.json still resolves).
 	npm ci --prefix $(UI_DIR)
