@@ -24,8 +24,11 @@ resource "google_storage_bucket" "assets" {
     enabled = true
   }
 
-  encryption {
-    default_kms_key_name = google_kms_crypto_key.creative.id # CMEK
+  dynamic "encryption" {
+    for_each = var.cmek_enabled ? [1] : []
+    content {
+      default_kms_key_name = one(google_kms_crypto_key.creative[*].id) # CMEK
+    }
   }
 
   depends_on = [
