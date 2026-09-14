@@ -35,7 +35,7 @@ output "runtime_service_account" {
 
 output "cmek_key" {
   description = "Regional CMEK crypto key id (protects assets, logs and the Run revision)."
-  value       = google_kms_crypto_key.creative.id
+  value       = one(google_kms_crypto_key.creative[*].id)
 }
 
 output "asset_bucket" {
