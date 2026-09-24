@@ -22,6 +22,7 @@ from hex_service_kit import cors_allowlist
 from hex_service_kit.netdefaults import ConfiguredEmptyError, read_env_setting
 from hex_service_kit.web import add_loopback_exposure_guard
 
+from ..adapters.controls import RecordingReviewRouter
 from ..config import Settings, end_user_auth_kind
 from ..domain.errors import GuardrailBlockedError, NoVariantsError
 from ..domain.identity import IdentityError
@@ -319,8 +320,11 @@ def generate_creative(body: CreativeRequestModel, principal: CurrentPrincipal) -
         brief = _brief(body)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    # The hand-off never fails an already-assembled, already-audited result; the response says
+    # what happened to it instead (the fleet's runtime-control contract).
+    routing = RecordingReviewRouter(deps.get_container().review_router)
     try:
-        result = make_studio_service().generate(
+        result = make_studio_service(review_router=routing).generate(
             brief,
             actor=principal.actor,
             with_image=body.with_image,
@@ -332,7 +336,10 @@ def generate_creative(body: CreativeRequestModel, principal: CurrentPrincipal) -
         raise HTTPException(status_code=404, detail=f"no variants generated: {exc}") from exc
     except NotImplementedError as exc:
         raise HTTPException(status_code=501, detail=str(exc)) from exc
-    return result_jsonable(result)
+    payload: dict = result_jsonable(result)
+    # What happened to the human-review hand-off: routed, failed, off or not_required.
+    payload["review_routing"] = routing.outcome.value
+    return payload
 
 
 @app.post("/v1/review")

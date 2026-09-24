@@ -25,8 +25,10 @@ from typing import Any
 
 from hex_service_kit import mcpserve
 
+from ..adapters.controls import RecordingReviewRouter
 from ..config import build_container
 from ..domain.models import Channel, CreativeBrief, Market, RetrievalQuery, Variant, Vertical
+from ..domain.serialization import result_jsonable
 
 #: The tools this module answers, as data, so a test can hold it against the catalog.
 HANDLER_NAMES: tuple[str, ...] = ("generate_creative", "review_variant", "search_brand_corpus")
@@ -64,13 +66,22 @@ def _optional_vertical(arguments: dict[str, Any]) -> Vertical | None:
 
 
 def build_handlers(actor: str) -> dict[str, mcpserve.Handler]:
-    """Bind each declared tool to the service or port that already performs it."""
-    from ..api.app import make_studio_service
+    """Bind each declared tool to the service or port that already performs it.
+
+    ``generate_creative`` hands its result to the review router, so it goes through
+    :class:`RecordingReviewRouter` and returns what happened to the hand-off
+    (``review_routing``); a failed hand-off is logged by exception type rather than swallowed.
+    """
+    from ..api.deps import get_container, make_studio_service
 
     def generate_creative(**arguments: Any) -> Any:
-        return make_studio_service().generate(
+        routing = RecordingReviewRouter(get_container().review_router)
+        result = make_studio_service(review_router=routing).generate(
             _brief(arguments, n_variants=int(arguments.get("n_variants") or 3)), actor=actor
         )
+        payload: dict[str, Any] = result_jsonable(result)
+        payload["review_routing"] = routing.outcome.value
+        return payload
 
     def review_variant(**arguments: Any) -> Any:
         variant = Variant(

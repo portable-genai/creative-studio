@@ -64,6 +64,16 @@ _GUARD_CALL = "add_loopback_exposure_guard"
 _CREDENTIAL_MARKERS: tuple[str, ...] = ("S2S", "TOKEN", "SECRET", "BEARER")
 
 
+@pytest.fixture(autouse=True)
+def _managed_deployment_names_its_console(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A managed process with review routing on refuses to boot without a console.
+
+    These tests build the app under the managed profile to exercise identity, not routing, so
+    they name a console the way any managed deployment must.
+    """
+    monkeypatch.setenv("HUMAN_REVIEW_URL", "https://review.example.test")
+
+
 def _client(peer: tuple[str, int], target: object = None) -> TestClient:
     return TestClient(target if target is not None else app_module.app, client=peer)
 

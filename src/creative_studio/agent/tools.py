@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from ..adapters.controls import RecordingReviewRouter
 from ..config import Container, Settings, build_container
 
 if TYPE_CHECKING:  # pragma: no cover - typing only, never imported at runtime
@@ -70,7 +71,9 @@ def generate_creative(
       actor: Authenticated identity the request is made for.
 
     Returns:
-      A JSON-safe ``CreativeStudioResult`` dict.
+      A JSON-safe ``CreativeStudioResult`` dict, with ``review_routing`` saying whether the
+      result reached the human-review console (``routed``), could not (``failed``), or routing
+      is ``off``.
     """
     from ..api.deps import make_studio_service
     from ..domain.models import Channel, CreativeBrief, Market, Vertical
@@ -88,9 +91,15 @@ def generate_creative(
         tone=tone,
         n_variants=n_variants,
     )
-    return result_jsonable(
-        make_studio_service(c).generate(brief, actor=actor, with_image=with_image)
+    routing = RecordingReviewRouter(c.review_router)
+    payload: dict[str, Any] = result_jsonable(
+        make_studio_service(c, review_router=routing).generate(
+            brief, actor=actor, with_image=with_image
+        )
     )
+    # The result is always a maker-checker item; the agent is told whether it is actually queued.
+    payload["review_routing"] = routing.outcome.value
+    return payload
 
 
 def review_variant(
