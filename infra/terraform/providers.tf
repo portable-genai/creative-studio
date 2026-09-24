@@ -11,7 +11,9 @@
 # org_policy v2) are exposed on the beta provider on the pinned line.
 
 terraform {
-  required_version = ">= 1.7"
+  # 1.9 is the first release whose variable validation may read another variable, which
+  # human_review_url needs to be required only while review routing is on.
+  required_version = ">= 1.9.0"
 
   required_providers {
     google = {

@@ -44,3 +44,9 @@ alert_notification_channels = []
 
 # Optional: restrict IAM grants to your directory/customer ids.
 allowed_policy_member_domains = []
+
+# Cheap runtime controls stay on in the reference; say so rather than inheriting the default.
+# With review routing on the service refuses to boot without the console it routes to.
+guardrail_enabled      = true
+review_routing_enabled = true
+human_review_url       = "https://human-review.acme-bank.example"

@@ -7,6 +7,7 @@ the domain orchestrator, so the CLI, API and agent layers share identical wiring
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Any
 
 from ..config import Container, build_container
 from ..domain.brand_service import BrandGuidelineService
@@ -19,7 +20,15 @@ def get_container() -> Container:
     return build_container()
 
 
-def make_studio_service(container: Container | None = None) -> CreativeStudioService:
+def make_studio_service(
+    container: Container | None = None, *, review_router: Any = None
+) -> CreativeStudioService:
+    """Build the studio service; ``review_router`` replaces the container's for one call.
+
+    A caller that reports the hand-off passes a
+    :class:`~creative_studio.adapters.controls.RecordingReviewRouter` wrapping the container's
+    router, so what it returns can say whether the result reached the review console.
+    """
     container = container or get_container()
     policy = container.settings.policy
     return CreativeStudioService(
@@ -37,5 +46,5 @@ def make_studio_service(container: Container | None = None) -> CreativeStudioSer
         dedup=VariantDedupService(
             similarity_threshold=policy.variant_similarity_threshold,
         ),
-        review_router=container.review_router,
+        review_router=review_router or container.review_router,
     )

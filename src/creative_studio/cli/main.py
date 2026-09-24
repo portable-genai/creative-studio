@@ -146,8 +146,11 @@ def generate(
     with_image: bool = typer.Option(False, "--image", help="Also generate an image asset."),
 ) -> None:
     """Generate and brand-check creative variants for a campaign theme."""
-    from ..api.deps import make_studio_service
+    from ..adapters.controls import RecordingReviewRouter
+    from ..api.deps import get_container, make_studio_service
     from ..domain.models import Channel, CreativeBrief, Market, Vertical
+
+    routing: RecordingReviewRouter | None = None
 
     def go() -> CreativeStudioResult:
         brief = CreativeBrief(
@@ -159,10 +162,17 @@ def generate(
             offer=offer,
             n_variants=n_variants,
         )
-        return make_studio_service().generate(brief, actor=_CLI_ACTOR, with_image=with_image)
+        nonlocal routing
+        routing = RecordingReviewRouter(get_container().review_router)
+        return make_studio_service(review_router=routing).generate(
+            brief, actor=_CLI_ACTOR, with_image=with_image
+        )
 
     result = _run("generate", go)
     _echo_result(result)
+    if routing is not None:
+        # Rule R8 on the CLI path too: say where the escalation went, not only that it exists.
+        typer.echo(f"human review hand-off: {routing.outcome.value}")
 
 
 @app.command()
