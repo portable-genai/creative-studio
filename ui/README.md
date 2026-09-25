@@ -21,6 +21,8 @@ no business logic; the backend owns the engines and the citations.
 | `proxy.ts` | The only place the policy is emitted, per request, on BOTH the request headers (where Next reads the nonce it stamps onto script tags) and the response headers (what the browser enforces). |
 | `next.config.mjs` | Base path, and the two genuinely static headers (`nosniff`, `Referrer-Policy`). Deliberately emits NO CSP: a second policy would be intersected with the first and the stricter would win per directive. |
 | `app/layout.tsx` | `export const dynamic = "force-dynamic"`, required by the nonce CSP rather than chosen for performance. |
+| `app/ModelPills.tsx` | The two top-right pills: the model that answered the last request (`X-Answered-By`), and `Search` while that answer used an online search tool (`X-Search-Used`). Before any answer, the configured `generator_model` from `/healthz`, dimmed. |
+| `lib/answer-provenance.mjs` | The one `window.fetch` wrapper that reads both headers off responses from `NEXT_PUBLIC_API_BASE`, so no call site reports what answered it. `tests/answer-provenance.test.mjs` proves it. |
 | `scripts/assert-hydratable.mjs` | Starts the BUILT server and asserts the served document actually hydrates. |
 | `tests/csp.test.mjs` | What a policy STRING can decide. Explicitly not sufficient on its own. |
 

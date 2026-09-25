@@ -13,6 +13,16 @@ structured JSON variants (headline / body / cta) which are mapped onto the domai
 The residency region is resolved from the requested market and **validated** against the
 per-market allow-list, so generation stays inside the configured residency boundary.
 
+Sampling is per call (owner decision, 2026-09-23). Drafting and narration send NO
+``temperature`` at all, so the model samples at its own default: a creative studio whose product
+is variation has no reason to pin it, and a model that rejects the parameter (Opus 5, Fable 5)
+must not be sent one. Only ``classify`` pins ``0.0``, because a label is compared against a fixed
+list and must come back the same for the same text.
+
+Each successful call notes the model it called (``hex_service_kit.provenance.note_model``), which
+the API emits as ``X-Answered-By`` for the console's model pill. No call here attaches an online
+search tool, so none notes a search.
+
 All Google Cloud / GenAI SDK imports are LAZY so the on-prem / local / test profile imports
 this module without ``google-genai`` installed.
 """
@@ -21,6 +31,8 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Any
+
+from hex_service_kit import provenance
 
 from ...config import Settings
 from ...domain.models import (
@@ -89,15 +101,17 @@ class GeminiCopyAdapter:
 
         client = self._get_client(brief.market)
         prompt = self._variants_prompt(brief)
+        model = self._models.reasoning
+        # Drafting: no temperature, so the model samples at its own default (see module doc).
         response = client.models.generate_content(
-            model=self._models.reasoning,
+            model=model,
             contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt)])],
             config=types.GenerateContentConfig(
-                temperature=0.6,
                 response_mime_type="application/json",
                 response_schema=_VARIANTS_SCHEMA,
             ),
         )
+        provenance.note_model(model)
         return self._to_variants(brief, response)
 
     def generate(self, request: LlmRequest) -> LlmResponse:
@@ -109,6 +123,7 @@ class GeminiCopyAdapter:
         contents = self._to_contents(request, types)
         config = self._build_config(request, types)
         response = client.models.generate_content(model=model, contents=contents, config=config)
+        provenance.note_model(model)
         return LlmResponse(
             text=getattr(response, "text", "") or "",
             usage=self._map_usage(getattr(response, "usage_metadata", None)),
@@ -126,11 +141,14 @@ class GeminiCopyAdapter:
             "Reply with the single label only, no punctuation or explanation.\n\n"
             f"Text:\n{text}"
         )
+        model = self._models.triage
+        # Pinned: a label is compared against a fixed list, so the same text must get the same one.
         response = client.models.generate_content(
-            model=self._models.triage,
+            model=model,
             contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt)])],
             config=types.GenerateContentConfig(temperature=0.0, max_output_tokens=16),
         )
+        provenance.note_model(model)
         raw = (getattr(response, "text", "") or "").strip()
         return self._match_label(raw, labels)
 
@@ -185,12 +203,15 @@ class GeminiCopyAdapter:
 
     def _build_config(self, request: LlmRequest, types: Any) -> Any:
         kwargs: dict[str, Any] = {
-            "temperature": request.temperature,
             "max_output_tokens": request.max_output_tokens,
             "thinking_config": types.ThinkingConfig(
                 thinking_level=self._thinking_level(request.thinking, types)
             ),
         }
+        # None means "do not sample-pin": the parameter is OMITTED, never sent as a default,
+        # because a model that rejects temperature rejects any value of it.
+        if request.temperature is not None:
+            kwargs["temperature"] = request.temperature
         if request.system_instruction:
             kwargs["system_instruction"] = request.system_instruction
         if request.response_schema is not None:

@@ -48,8 +48,6 @@ models:
   location: ${MODEL_LOCATION:-asia-southeast1}
   reasoning: gemini-3.5-flash            # GA — copy / variant drafting + narration
   triage: gemini-3.5-flash          # GA — routing / triage / guardrail pre-checks
-  hard_reasoning: gemini-3.5-flash  # in-region SG commitment; no Gemini 3 PRO tier serves any location
-  use_hard_reasoning: false
   image_model: imagen-4.0-generate-001   # Imagen — asset image generation
 
 knowledge_base:

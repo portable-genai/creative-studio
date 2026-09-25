@@ -35,7 +35,9 @@ make run-api       # FastAPI on 127.0.0.1:8102 (local profile binds loopback by 
 ```
 
 The agent card is served at `GET /.well-known/agent-card.json` and the health probe at
-`GET /healthz` (reports the active profile, market and vertical).
+`GET /healthz` (reports the active profile, market and vertical, and the `runtime` and
+`generator_model` the console's model pill shows before a request is answered). A model-backed
+response carries `X-Answered-By`, the model that actually answered.
 
 ## 2. Deploy (managed stack)
 

@@ -11,6 +11,11 @@ The residency region is resolved from the active market and **validated** agains
 per-market allow-list, so brand-corpus retrieval stays inside the configured residency
 boundary (JP/AU/SG).
 
+The retrieval call pins ``temperature`` to ``0.0``: what is kept is the grounding chunks it
+extracts, and the same query must retrieve the same evidence. It notes the model it called for the
+console's model pill. File Search reads this deployment's own corpus, not the web, so it is not an
+online search tool and notes no search.
+
 All Google Cloud / GenAI SDK imports are LAZY so the on-prem / local / test profile imports
 this module without ``google-genai`` installed.
 """
@@ -18,6 +23,8 @@ this module without ``google-genai`` installed.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+
+from hex_service_kit import provenance
 
 from ...config import Settings
 from ...domain.models import Citation, RetrievalQuery, RetrievedPassage, SourceType
@@ -63,6 +70,7 @@ class FileSearchKnowledgeBaseAdapter:
             contents=[types.Content(role="user", parts=[types.Part.from_text(text=query.text)])],
             config=types.GenerateContentConfig(tools=[file_search], temperature=0.0),
         )
+        provenance.note_model(self._model)
         return self._to_passages(response, top_k)
 
     @staticmethod

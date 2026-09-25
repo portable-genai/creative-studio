@@ -10,6 +10,9 @@ channel spec.
 The residency region is resolved from the requested market and **validated** against the
 per-market allow-list, so image generation stays inside the configured residency boundary.
 
+A successful call notes the Imagen model it called (``hex_service_kit.provenance.note_model``), so
+a request that drew an image answers ``X-Answered-By`` with the image model beside the copy model.
+
 All Google Cloud / GenAI SDK imports are LAZY so the on-prem / local / test profile imports
 this module without ``google-genai`` installed.
 """
@@ -17,6 +20,8 @@ this module without ``google-genai`` installed.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+
+from hex_service_kit import provenance
 
 from ...config import Settings
 from ...domain.models import Citation, GeneratedImage, ImageRequest, SourceType
@@ -60,6 +65,7 @@ class ImagenImageAdapter:
                 aspect_ratio=request.aspect_ratio or "1:1",
             ),
         )
+        provenance.note_model(self._model)
         return self._to_image(request, response)
 
     def _to_image(self, request: ImageRequest, response: Any) -> GeneratedImage:

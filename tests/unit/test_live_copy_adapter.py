@@ -90,7 +90,7 @@ def test_a_fenced_then_invalid_variant_draft_is_retried_until_it_validates() -> 
     assert "body" in transport.bodies[1]["messages"][-1]["content"]
     assert [v.headline for v in variants] == ["Save steadily", "A calm way to save"]
     assert all(v.channel is Channel.EMAIL and v.id == "" for v in variants)
-    assert transport.bodies[0]["temperature"] == 0.6
+    assert "temperature" not in transport.bodies[0], "drafting samples freely: no temperature"
 
 
 def test_narration_maps_the_request_with_its_temperature_unchanged() -> None:
@@ -152,7 +152,7 @@ def test_the_container_builds_every_port_under_live_and_keeps_the_image_stub() -
     assert isinstance(container.image, LocalDeterministicImageAdapter)
 
 
-def test_the_banner_names_the_local_model_under_live(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_the_pill_names_the_local_model_under_live(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("LOCAL_MODEL", _ANSWERED_BY)
     settings = _settings("live")
     assert settings.runtime == "local"

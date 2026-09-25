@@ -10,10 +10,10 @@ start-up.
 routing it through generation would produce creative nobody asked for. The other two are the
 studio service's own entry points.
 
-**This is the one tree in the fleet that samples on purpose**, and serving it changes nothing
-about that: variation is the product here, and the deliberate temperature lives on the request
-type with its own guard. A tool call gets the same non-deterministic generation a UI caller
-gets, which is the honest behaviour rather than a quietly different one.
+**Drafting samples on purpose**, and serving it changes nothing about that: variation is the
+product here, and the sampling decision lives on each model call
+(``tests/unit/test_sampling_per_call.py`` holds it). A tool call gets the same non-deterministic
+generation a UI caller gets, which is the honest behaviour rather than a quietly different one.
 
 MCP stdio verifies no end user, so the caller is recorded as a SERVICE caller and no tenant is
 asserted.
