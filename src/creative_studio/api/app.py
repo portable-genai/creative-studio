@@ -23,8 +23,13 @@ from hex_service_kit.netdefaults import ConfiguredEmptyError, read_env_setting
 from hex_service_kit.web import add_loopback_exposure_guard
 
 from ..adapters.controls import RecordingReviewRouter
-from ..config import Settings, end_user_auth_kind
-from ..domain.errors import GuardrailBlockedError, NoVariantsError
+from ..config import LAPTOP_PROFILES, Settings, end_user_auth_kind
+from ..domain.errors import (
+    GuardrailBlockedError,
+    ModelOutputError,
+    ModelUnavailableError,
+    NoVariantsError,
+)
 from ..domain.identity import IdentityError
 from ..domain.models import Channel, CreativeBrief, Market, Variant, Vertical
 from ..domain.serialization import result_jsonable, review_jsonable
@@ -157,10 +162,13 @@ def _cors_origins() -> list[str]:
             [origin.strip() for origin in setting.value.split(",") if origin.strip()],
             _CORS_ORIGINS_ENV,
         )
+    exposure = deps.get_container().settings.exposure_profile
     origins = cors_allowlist(
-        deps.get_container().settings.exposure_profile,
+        exposure,
         origins_env=_CORS_ORIGINS_ENV,
         dev_origins=tuple(_DEV_ORIGINS),
+        # Both laptop profiles trust the localhost dev origins; an unconsented run matches none.
+        local_profile=exposure if exposure in LAPTOP_PROFILES else "local",
     )
     _refuse_wildcard(origins, _CORS_ORIGINS_ENV)
     return origins
@@ -334,6 +342,10 @@ def generate_creative(body: CreativeRequestModel, principal: CurrentPrincipal) -
         raise HTTPException(status_code=400, detail=f"guardrail blocked: {exc}") from exc
     except NoVariantsError as exc:
         raise HTTPException(status_code=404, detail=f"no variants generated: {exc}") from exc
+    except ModelUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=f"model unavailable: {exc}") from exc
+    except ModelOutputError as exc:
+        raise HTTPException(status_code=502, detail=f"model output unusable: {exc}") from exc
     except NotImplementedError as exc:
         raise HTTPException(status_code=501, detail=str(exc)) from exc
     payload: dict = result_jsonable(result)

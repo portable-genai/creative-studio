@@ -21,7 +21,7 @@ and seed rather than hard-coded.
 | Catalog id | `creative-studio` |
 | Package | `src/creative_studio/` |
 | Profile variable | `MKT_CREATIVE_PROFILE` |
-| Adapter families | `gcp`, `local`, `onprem`, `platform` |
+| Adapter families | `gcp`, `local`, `live` (copy on a local model via `hex_service_kit.localmodel`; image stays the local stub), `onprem`, `platform` |
 | Gate | `make gate` |
 
 `config.resolve_profile` is the one place that reads that variable, in three states: unset is

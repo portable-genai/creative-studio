@@ -55,6 +55,16 @@ with three adapter families:
 Switch the whole stack with one setting: `MKT_CREATIVE_PROFILE=gcp|local|onprem`. A
 `platform` profile binds thin clients to the shared `agent-guardrail-gateway`-`agent-observability` platform services.
 
+`MKT_CREATIVE_PROFILE=live` is the laptop run with a real model: the `local` stack except
+`copy`, which calls a local open-weight model through the fleet's shared client,
+`hex_service_kit.localmodel` (`LOCAL_MODEL_URL`, default
+`http://127.0.0.1:8001/chat/completions`; `LOCAL_MODEL`, default
+`mlx-community/gemma-4-31b-it-8bit`). `image` stays on the deterministic stub, since a local
+text model cannot draw. Start a server with
+`uv venv --python 3.13 .mlx-venv && uv pip install --python .mlx-venv mlx-vlm`, then
+`.mlx-venv/bin/python -m mlx_vlm.server --model mlx-community/gemma-4-31b-it-8bit --port 8001`,
+and run `make run-api PROFILE=live`. A down server answers 503 with the same recipe.
+
 ## Quick start (offline, no Google Cloud)
 
 ```bash
