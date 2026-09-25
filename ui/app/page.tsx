@@ -51,9 +51,9 @@ export default function Page() {
       const status = await api.healthz();
       if (cancelled) return;
       setHealth(status);
-      // The persona picker is dev-only: it only appears under the local profile, where
-      // the backend has no IdP and resolves identity from the X-Dev-Persona header.
-      if (!status || status.profile !== "local") return;
+      // The persona picker is dev-only: it only appears under the laptop profiles (local,
+      // live), where the backend has no IdP and resolves identity from the X-Dev-Persona header.
+      if (!status || (status.profile !== "local" && status.profile !== "live")) return;
       try {
         const list = await api.listPersonas();
         if (cancelled || list.length === 0) return;

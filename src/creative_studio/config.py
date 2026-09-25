@@ -46,7 +46,15 @@ PROFILE_ENV = "MKT_CREATIVE_PROFILE"
 #: Every profile the adapter table binds. The comparison against it is exact and
 #: case-sensitive: ``Local`` selects none of the ``local`` relaxations but also none of its
 #: restrictions, so normalising the case would turn a typo into a silent choice.
-RUNTIME_PROFILES = frozenset({"local", "gcp", "platform", "onprem"})
+RUNTIME_PROFILES = frozenset({"local", "live", "gcp", "platform", "onprem"})
+
+#: The laptop profiles. Both run on the presenter's machine with the ``local`` posture (loopback
+#: bind guard, seeded dev personas, in-process stores, localhost CORS origins); they differ only
+#: in the copy port. ``local`` binds the deterministic templated drafter and is what tests, CI
+#: and ``make demo`` use. ``live`` binds the fleet's one local open-weight model through the
+#: shared ``hex_service_kit.localmodel`` client (``LOCAL_MODEL_URL``, ``LOCAL_MODEL``). The
+#: image port stays on the deterministic stub under both: a local text model cannot draw.
+LAPTOP_PROFILES: frozenset[str] = frozenset({"local", "live"})
 
 #: The profile string handed to every RELAXATION when no profile was chosen at all. It is
 #: deliberately NOT a member of :data:`RUNTIME_PROFILES` and never reaches the adapter table:
@@ -495,8 +503,8 @@ class Settings:
         runtime from ``window.location`` would be right until the day the deployment served
         through a proxy and wrong silently after that, so the service is the party asked.
 
-        ``onprem`` reads ``local`` because that is its entire point, and a managed model call
-        does not make a process cloud-hosted: this states where the PROCESS runs, and
+        ``onprem`` and ``live`` read ``local`` because that is where they run, and a model call
+        does not move a process: this states where the PROCESS runs, and
         :attr:`generator_model` states whose model answers.
         """
         return "gcp" if self.profile in _MANAGED_PROFILES else "local"
@@ -521,6 +529,12 @@ class Settings:
         binding = str(table.get(self.profile, "") or "")
         if not binding:
             return "no-model"
+        if self.profile == "live":
+            # The shared local-model client owns LOCAL_MODEL; the banner names the model that
+            # client will call, which is also the id each live response records.
+            from hex_service_kit.localmodel import LocalModelSettings
+
+            return LocalModelSettings.from_env().model
         if self.profile not in _MANAGED_PROFILES:
             # The on-prem adapters are fail-fast migration placeholders: they raise rather than
             # generating, so naming a model would advertise one that never answers.
