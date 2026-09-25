@@ -9,6 +9,9 @@ adapter only builds the messages and maps the completion back onto the domain ty
 
 As under every profile, the model drafts copy and variant ideas and narrates the computed
 checks; the deterministic brand, claim, policy and asset engines decide every verdict.
+
+The kit client notes the model that answered each call (``X-Answered-By``), so this adapter notes
+nothing itself. A ``None`` temperature is passed through, and the client then sends none.
 """
 
 from __future__ import annotations
@@ -49,8 +52,6 @@ _VARIANTS_SCHEMA: dict[str, Any] = {
     "required": ["variants"],
 }
 
-#: The drafting temperature the Gemini adapter uses for variants, so both profiles sample alike.
-_VARIANTS_TEMPERATURE = 0.6
 _VARIANTS_MAX_TOKENS = 2048
 _CLASSIFY_MAX_TOKENS = 16
 
@@ -70,7 +71,8 @@ class LocalModelCopyAdapter:
         completion = self._call(
             messages,
             schema=_VARIANTS_SCHEMA,
-            temperature=_VARIANTS_TEMPERATURE,
+            # Drafting sends no temperature, as the Gemini adapter does: the model samples freely.
+            temperature=None,
             max_tokens=_VARIANTS_MAX_TOKENS,
         )
         items = completion.data.get("variants", []) if isinstance(completion.data, dict) else []
@@ -105,6 +107,7 @@ class LocalModelCopyAdapter:
         completion = self._call(
             [{"role": "user", "content": prompt}],
             schema=None,
+            # Pinned: a label is compared against a fixed list, as under the Gemini adapter.
             temperature=0.0,
             max_tokens=_CLASSIFY_MAX_TOKENS,
         )

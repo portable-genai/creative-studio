@@ -10,6 +10,10 @@ unconditional. The LLM never decides the verdicts: the deterministic engines do.
 ``generate`` (used by the orchestrator for narration) reads ``request.response_schema`` and
 emits a deterministic JSON object whose keys match it, mapping ``used_rule_ids`` from the
 ``[rule_id]`` headers in the rendered evidence block.
+
+Every call notes :data:`~creative_studio.config.OFFLINE_STUB_MODEL` as the model that answered,
+the same string ``generator_model`` reports under ``local``: the console's model pill then says
+the stub answered, which is true, rather than naming a Gemini model nothing called.
 """
 
 from __future__ import annotations
@@ -18,7 +22,9 @@ import json
 import re
 from typing import Any
 
-from ...config import Settings
+from hex_service_kit import provenance
+
+from ...config import OFFLINE_STUB_MODEL, Settings
 from ...domain.models import (
     Channel,
     CreativeBrief,
@@ -111,6 +117,7 @@ class LocalTemplatedCopyAdapter:
         spec = asset_spec_for(brief.channel)
         product = brief.product or brief.topic or "our latest offer"
         offer = brief.offer or "a great deal"
+        provenance.note_model(OFFLINE_STUB_MODEL)
         n = max(1, min(brief.n_variants, len(angles)))
         variants: list[Variant] = []
         for i in range(n):
@@ -136,6 +143,7 @@ class LocalTemplatedCopyAdapter:
     def generate(self, request: LlmRequest) -> LlmResponse:
         rule_ids = self._rule_ids_from_request(request)
         body = self._body_for_schema(request.response_schema, rule_ids)
+        provenance.note_model(OFFLINE_STUB_MODEL)
         return LlmResponse(
             text=json.dumps(body),
             usage=TokenUsage(input_tokens=96, output_tokens=48, thinking_tokens=24),
@@ -144,6 +152,7 @@ class LocalTemplatedCopyAdapter:
         )
 
     def classify(self, text: str, labels: list[str]) -> str:
+        provenance.note_model(OFFLINE_STUB_MODEL)
         return labels[0] if labels else ""
 
     # ------------------------------------------------------------------ #
