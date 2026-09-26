@@ -45,6 +45,11 @@ alert_notification_channels = []
 # Optional: restrict IAM grants to your directory/customer ids.
 allowed_policy_member_domains = []
 
+# asia-southeast1 serves neither the malicious-URI filter nor multi-language detection; Model
+# Armor refuses the whole template there instead of degrading, so a deploy in this region states
+# the narrowed guardrail explicitly rather than inheriting the full-capabilities default:
+# model_armor_full_capabilities = false
+
 # Cheap runtime controls stay on in the reference; say so rather than inheriting the default.
 # With review routing on the service refuses to boot without the console it routes to.
 guardrail_enabled      = true
