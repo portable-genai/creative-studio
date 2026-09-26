@@ -231,6 +231,21 @@ variable "cmek_enabled" {
   EOT
 }
 
+variable "model_armor_full_capabilities" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    Whether the guardrail template asks for the capabilities that are not served in every
+    region: the malicious-URI filter and multi-language detection.
+
+    True by default, because a deployment should get the whole guardrail unless it has a reason
+    not to. asia-southeast1 serves neither, and Model Armor does not degrade: it refuses the
+    template with CAPABILITY_NOT_SUPPORTED, so the stack does not deploy at all. A deployment
+    there sets this false, which narrows the guardrail and is a disclosure to make in the
+    deployment's posture record rather than a silent downgrade.
+  EOT
+}
+
 # --------------------------------------------------------------------------- #
 # Cheap runtime controls (the fleet's runtime-control contract). Each is on in the reference,
 # reversible, and therefore takes a default; off is a stated deployment choice the service logs

@@ -52,3 +52,8 @@ output "audit_sink_writer_identity" {
   description = "Sink writer identity (grant it bucket access if cross-project)."
   value       = google_logging_project_sink.audit_to_worm.writer_identity
 }
+
+output "model_armor_template" {
+  description = "Model Armor template id (settings.yaml model_armor.template_id)."
+  value       = google_model_armor_template.mkt_creative_guardrail.template_id
+}
