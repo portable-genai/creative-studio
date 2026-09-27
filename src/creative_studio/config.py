@@ -282,6 +282,8 @@ class KnowledgeBaseSettings:
 class ModelArmorSettings:
     template_id: str = "mkt-creative-guardrail"
     host: str = "modelarmor.asia-southeast1.rep.googleapis.com"
+    #: The deadline on every sanitize call. A timeout fails CLOSED: the error propagates.
+    timeout_seconds: float = 10.0
 
 
 #: The environment variables that switch each cheap runtime control, read in three states:
