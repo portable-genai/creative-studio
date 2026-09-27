@@ -158,8 +158,8 @@ adapters:
     live: creative_studio.adapters.local.audit:LocalAppendOnlyAuditAdapter
     onprem: creative_studio.adapters.onprem.audit:OnPremAuditAdapter
   tracer:
-    gcp: creative_studio.adapters.gcp.cloud_trace_tracer:CloudTraceTracerAdapter
-    platform: creative_studio.adapters.gcp.cloud_trace_tracer:CloudTraceTracerAdapter
+    gcp: creative_studio.adapters.gcp.tracer:CloudTracerAdapter
+    platform: creative_studio.adapters.gcp.tracer:CloudTracerAdapter
     local: creative_studio.adapters.local.tracer:LocalNoopTracerAdapter
     live: creative_studio.adapters.local.tracer:LocalNoopTracerAdapter
     onprem: creative_studio.adapters.onprem.tracer:OnPremTracerAdapter

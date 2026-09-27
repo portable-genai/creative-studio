@@ -45,7 +45,7 @@ GCP_ADAPTERS: dict[str, tuple[str, type]] = {
         ports.AuditSinkPort,
     ),
     "tracer": (
-        "creative_studio.adapters.gcp.cloud_trace_tracer:CloudTraceTracerAdapter",
+        "creative_studio.adapters.gcp.tracer:CloudTracerAdapter",
         ports.ObservabilityTracerPort,
     ),
     "evaluation": (
