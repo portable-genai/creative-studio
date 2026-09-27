@@ -69,6 +69,8 @@ knowledge_base:
 model_armor:
   template_id: mkt-creative-guardrail
   host: modelarmor.asia-southeast1.rep.googleapis.com
+  # The deadline on every sanitize call. A timeout fails CLOSED: the error propagates.
+  timeout_seconds: 10.0
 
 logging:
   log_name: creative-studio-audit
