@@ -38,14 +38,35 @@ run "asia_southeast1_declines_the_capabilities_the_region_refuses" {
   }
 }
 
-run "the_default_gets_the_full_guardrail" {
+run "stating_it_gets_the_full_guardrail" {
   command = plan
+
+  variables {
+    model_armor_full_capabilities = true
+  }
 
   assert {
     condition = (
       length(google_model_armor_template.mkt_creative_guardrail.filter_config[0].malicious_uri_filter_settings) == 1 &&
       length(google_model_armor_template.mkt_creative_guardrail.template_metadata[0].multi_language_detection) == 1
     )
-    error_message = "model_armor_full_capabilities defaults to true; a deployment gets the whole guardrail unless it opts out."
+    error_message = "model_armor_full_capabilities stated true; a deployment gets the whole guardrail unless it opts out."
+  }
+}
+
+# Slice 7 of the 2026-09-23 posture rule: a control that is not irreversible defaults off in
+# code, so the regional capabilities arrive only when a deployment states them.
+run "guardrail_regional_capabilities_are_declined_unless_stated" {
+  command = plan
+
+
+  assert {
+    condition     = length(google_model_armor_template.mkt_creative_guardrail.filter_config[0].malicious_uri_filter_settings) == 0
+    error_message = "model_armor_full_capabilities defaults to false: the malicious-URI filter arrives only when stated."
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.mkt_creative_guardrail.template_metadata[0].multi_language_detection) == 0
+    error_message = "model_armor_full_capabilities defaults to false: multi-language detection arrives only when stated."
   }
 }
