@@ -119,6 +119,13 @@ class CreativeStudioService:
             variants = self._dedup.dedup(self._dedup.assign_ids(drafted))
             if not variants:
                 raise NoVariantsError("copy generation produced no usable variants")
+            # The variants are the deliverable and the model's own words, so they are screened as
+            # OUTPUT before anything uses them: before a headline becomes an image prompt and
+            # before the caller receives them. The deterministic brand, claim and policy checks
+            # below are not Model Armor's injection, sensitive-data and malicious-URI screen.
+            self._guard(
+                self._variants_text(variants), Direction.OUTPUT, actor, action="generate_creative"
+            )
 
             if with_image:
                 variants = tuple(self._attach_image(v, brief) for v in variants)
@@ -281,6 +288,13 @@ class CreativeStudioService:
     # ------------------------------------------------------------------ #
     # Cross-cutting: guardrail, tracing, audit
     # ------------------------------------------------------------------ #
+    @staticmethod
+    def _variants_text(variants: tuple[Variant, ...]) -> str:
+        """Every model-written field of every variant, rendered for the OUTPUT screen."""
+        return "\n".join(
+            " | ".join(p for p in (v.headline, v.body, v.cta, v.rationale) if p) for v in variants
+        )
+
     @staticmethod
     def _brief_text(brief: CreativeBrief) -> str:
         return " ".join(
